@@ -1,4 +1,4 @@
-from typing import List, Optional, Union
+from typing import List, Optional, Sequence, Union
 
 import attr
 
@@ -88,7 +88,7 @@ class AsyncTxAPI(BaseAsyncAPI):
     async def estimate_fee(
         self,
         sender: AccAddress,
-        msgs: List[Msg],
+        msgs: Sequence[Msg],
         memo: str = "",
         gas: Optional[int] = None,
         gas_prices: Optional[Coins.Input] = None,
