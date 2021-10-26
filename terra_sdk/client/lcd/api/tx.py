@@ -94,6 +94,8 @@ class AsyncTxAPI(BaseAsyncAPI):
         gas_prices: Optional[Coins.Input] = None,
         gas_adjustment: Optional[Numeric.Input] = None,
         fee_denoms: Optional[List[str]] = None,
+        account_number: Optional[int] = None,
+        sequence: Optional[int] = None,
     ) -> StdFee:
         """Estimates the proper fee to apply by simulating it within the node.
 
@@ -118,6 +120,13 @@ class AsyncTxAPI(BaseAsyncAPI):
                     lambda c: c.denom in _fee_denoms
                 )
 
+        if account_number is None or sequence is None:
+            account = await BaseAsyncAPI._try_await(self._c.auth.account_info(sender))
+            if account_number is None:
+                account_number = account.account_number
+            if sequence is None:
+                sequence = account.sequence
+
         data = {
             "base_req": {
                 "chain_id": self._c.chain_id,
@@ -126,6 +135,8 @@ class AsyncTxAPI(BaseAsyncAPI):
                 "memo": memo,
                 "gas_prices": gas_prices_coins and gas_prices_coins.to_data(),
                 "gas_adjustment": gas_adjustment and str(gas_adjustment),
+                "account_number": str(account_number),
+                "sequence": str(sequence),
             },
             "msgs": [m.to_data() for m in msgs],
         }
