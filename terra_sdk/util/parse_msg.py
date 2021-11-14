@@ -1,18 +1,18 @@
+from terra_sdk.core.authz import (
+    MsgExecAuthorized,
+    MsgGrantAuthorization,
+    MsgRevokeAuthorization,
+)
 from terra_sdk.core.bank import MsgMultiSend, MsgSend
 from terra_sdk.core.distribution import (
     MsgFundCommunityPool,
-    MsgModifyWithdrawAddress,
+    MsgSetWithdrawAddress,
     MsgWithdrawDelegationReward,
     MsgWithdrawValidatorCommission,
 )
 from terra_sdk.core.gov.msgs import MsgDeposit, MsgSubmitProposal, MsgVote
 from terra_sdk.core.ibc.msgs import MsgTransfer
 from terra_sdk.core.market import MsgSwap, MsgSwapSend
-from terra_sdk.core.msgauth import (
-    MsgExecAuthorized,
-    MsgGrantAuthorization,
-    MsgRevokeAuthorization,
-)
 from terra_sdk.core.oracle import (
     MsgAggregateExchangeRatePrevote,
     MsgAggregateExchangeRateVote,
@@ -41,14 +41,14 @@ from .base import create_demux
 bank_msgs = [MsgSend, MsgMultiSend]
 distribution_msgs = [
     MsgFundCommunityPool,
-    MsgModifyWithdrawAddress,
+    MsgSetWithdrawAddress,
     MsgWithdrawDelegationReward,
     MsgWithdrawValidatorCommission,
 ]
 gov_msgs = [MsgDeposit, MsgSubmitProposal, MsgVote]
 ibc_msgs = [MsgTransfer]
 market_msgs = [MsgSwap, MsgSwapSend]
-msgauth_msgs = [
+authz_msgs = [
     MsgExecAuthorized,
     MsgGrantAuthorization,
     MsgRevokeAuthorization,
