@@ -11,7 +11,7 @@ __all__ = ["AsyncBankAPI", "BankAPI"]
 class AsyncBankAPI(BaseAsyncAPI):
     async def balance(
         self, address: AccAddress, params: Optional[APIParams] = None
-    ) -> (Coins, dict):
+    ) -> tuple[Coins, dict]:
         """Fetches an account's current balance.
 
         Args:
