@@ -34,9 +34,9 @@ def convert_to_dec_bignum(arg: Union[str, int, float, Decimal]):
             result *= -1
         return result
     elif isinstance(arg, Decimal):
-        whole = int(arg)
-        fraction = int(arg % 1)
-        return int((whole * DEC_ONE) + (fraction * DEC_ONE))
+        whole = int(arg) * DEC_ONE
+        fraction = int(arg % 1 * DEC_ONE)
+        return whole + fraction
     else:
         raise TypeError(
             f"Unable to parse Dec integer representation from given argument {arg}"

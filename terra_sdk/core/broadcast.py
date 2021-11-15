@@ -78,6 +78,6 @@ class AsyncTxBroadcastResult(JSONSerializable):
     """Transaction hash."""
 
 
-def is_tx_error(result: Union[BlockTxBroadcastResult, SyncTxBroadcastResult]):
+def is_tx_error(result: Union[BlockTxBroadcastResult, SyncTxBroadcastResult]) -> bool:
     """Returns whether the transaction failed."""
-    return result.code is not None
+    return bool(result.code)

@@ -31,20 +31,20 @@ class SignerOptions:
 
 @attr.s
 class CreateTxOptions:
-    msgs: List[Msg] = attr.ib()
+    msgs: Sequence[Msg] = attr.ib()
     fee: Optional[Fee] = attr.ib(default=None)
     memo: Optional[str] = attr.ib(default=None)
     gas: Optional[str] = attr.ib(default=None)
     gas_prices: Optional[Coins] = attr.ib(default=None)
     # FIXME: is it okay with 0 bye default?
-    gas_adjustment: Optional[Numeric.Output] = attr.ib(
+    gas_adjustment: Optional[Numeric.Input] = attr.ib(
         default=0, converter=Numeric.parse
     )
-    fee_denoms: Optional[str] = attr.ib(default=None)
+    fee_denoms: Optional[Sequence[str]] = attr.ib(default=None)
     account_number: Optional[int] = attr.ib(default=None)
     sequence: Optional[int] = attr.ib(default=None)
     timeout_height: Optional[int] = attr.ib(default=None)
-    sign_mode: Optional[SignMode] = attr.ib(default=None)
+    sign_mode: Optional[SignMode] = attr.ib(default=SignMode.SIGN_MODE_DIRECT)
 
 
 @attr.s
@@ -89,7 +89,7 @@ class SimulateResponse(JSONSerializable):
 
 
 class AsyncTxAPI(BaseAsyncAPI):
-    async def tx_info(self, tx_hash: str) -> Tx:
+    async def tx_info(self, tx_hash: str) -> TxInfo:
         """Fetches information for an included transaction given a tx hash.
 
         Args:
@@ -169,11 +169,8 @@ class AsyncTxAPI(BaseAsyncAPI):
         if gas_prices:
             gas_prices_coins = Coins(gas_prices)
             if options.fee_denoms:
-                _fee_denoms: List[
-                    str
-                ] = options.fee_denoms  # satisfy mypy type checking :(
                 gas_prices_coins = gas_prices_coins.filter(
-                    lambda c: c.denom in _fee_denoms
+                    lambda c: c.denom in options.fee_denoms
                 )
         tx_body = TxBody(messages=options.msgs, memo=options.memo or "")
         emptyCoins = Coins()
@@ -187,7 +184,7 @@ class AsyncTxAPI(BaseAsyncAPI):
         if gas is None or gas == "auto" or gas == 0:
             opt = copy.deepcopy(options)
             opt.gas_adjustment = gas_adjustment
-            gas = str(self.estimate_gas(tx, opt))
+            gas = str(await self.estimate_gas(tx, opt))
 
         tax_amount = await self.compute_tax(tx)
         fee_amount = (
@@ -221,7 +218,7 @@ class AsyncTxAPI(BaseAsyncAPI):
         )
         return Coins.from_data(res.get("tax_amount"))
 
-    async def encode(self, tx: Tx, options: BroadcastOptions = None) -> str:
+    def encode(self, tx: Tx, options: BroadcastOptions = None) -> str:
         return base64.b64encode(tx.to_proto().SerializeToString()).decode()
 
     async def hash(self, tx: Tx) -> str:
@@ -240,7 +237,7 @@ class AsyncTxAPI(BaseAsyncAPI):
         self, tx: Tx, mode: str, options: BroadcastOptions = None
     ) -> dict:
         data = {"tx_bytes": self.encode(tx), "mode": mode}
-        return await self._c._post("/cosmos/tx/v1beta1/txs", data)  # , raw=True)
+        return (await self._c._post("/cosmos/tx/v1beta1/txs", data))["tx_response"]
 
     async def broadcast_sync(
         self, tx: Tx, options: BroadcastOptions = None

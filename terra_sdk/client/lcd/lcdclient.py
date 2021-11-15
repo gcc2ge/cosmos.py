@@ -116,7 +116,7 @@ class AsyncLCDClient:
             except JSONDecodeError:
                 raise LCDResponseError(message=str(response.reason), response=response)
             if not 200 <= response.status < 299:
-                raise LCDResponseError(message=result.get("error"), response=response)
+                raise LCDResponseError(message=str(result), response=response)
         self.last_request_height = result.get("height")
         return result  # if raw else result["result"]
 
