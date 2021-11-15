@@ -17,7 +17,7 @@ keywords = ["jigu", "blockchain", "terra", "defi", "crypto"]
 license = "MIT"
 packages = [{ include = "terra_sdk" }]
 readme = "README.md"
-repository = "https://github.com/terra-money/terra-sdk-python"
+repository = "https://github.com/fabio-nukui/terra.py"
 version = "2.0.0-beta1"
 
 [tool.poetry.dependencies]
