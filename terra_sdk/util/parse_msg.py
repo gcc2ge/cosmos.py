@@ -81,7 +81,7 @@ parse_msg = create_demux(
         *bank_msgs,
         *distribution_msgs,
         *gov_msgs,
-        *ibc_msgs,
+        # *ibc_msgs,
         *market_msgs,
         *oracle_msgs,
         *slashing_msgs,
