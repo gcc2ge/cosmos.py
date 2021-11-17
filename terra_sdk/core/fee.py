@@ -47,8 +47,8 @@ class Fee(JSONSerializable):
         return {
             "gas_limit": str(self.gas_limit),
             "amount": self.amount.to_data(),
-            "payer": str(self.payer),
-            "granter": str(self.granter),
+            "payer": self.payer if self.payer else "",
+            "granter": self.granter if self.granter else "",
         }
 
     def to_proto(self) -> Fee_pb:
