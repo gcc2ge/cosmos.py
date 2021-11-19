@@ -13,7 +13,7 @@ class BaseTerraData(JSONSerializable, Message):
     type_url: str
 
     def to_data(self) -> dict:
-        return {"@type": self.type_url, "value": dict_to_data(self.__dict__)}
+        return {"@type": self.type_url, **dict_to_data(self.__dict__)}
 
     @staticmethod
     @abstractmethod
@@ -29,6 +29,6 @@ def create_demux(inputs: List[BaseTerraData]) -> Callable[[Dict[str, Any]], Any]
     table = {i.type_url: i.from_data for i in inputs}
 
     def from_data(data: dict):
-        return table[data["@type"]](data["value"])
+        return table[data["@type"]](data)
 
     return from_data
