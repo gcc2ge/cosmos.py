@@ -11,8 +11,8 @@ __all__ = ["Height"]
 
 @attr.s
 class Height(JSONSerializable):
-    revision_number: int = attr.ib(converter=int)
-    revision_height: int = attr.ib(converter=int)
+    revision_number: int = attr.ib(default=0, converter=int)
+    revision_height: int = attr.ib(default=0, converter=int)
 
     def to_amino(self) -> dict:
         return {

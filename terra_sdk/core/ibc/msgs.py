@@ -3,49 +3,79 @@
 from __future__ import annotations
 
 import attr
+from terra_proto.ibc.applications.transfer.v1 import MsgTransfer as MsgTransfer_pb
 
 from terra_sdk.core import AccAddress, Coin
 from terra_sdk.core.msg import Msg
+
+from .data import Height
 
 __all__ = ["MsgTransfer"]
 
 
 @attr.s
 class MsgTransfer(Msg):
-    """Perform an IBC transfer
-    https://docs.rs/cosmos-sdk-proto/0.6.3/cosmos_sdk_proto/ibc/applications/transfer/v1/struct.MsgTransfer.html
+    """
+    MsgTransfer defines a msg to transfer fungible tokens (i.e Coins) between ICS20 enabled chains.
 
     Args:
+        source_port (str): the port on which the packet will be sent
         source_channel (str): the channel by which the packet will be sent
         token (Union[Coin, str, dict]): the tokens to be transferred
-        sender (str): the sender address
+        sender (AccAddress): the sender address
         receiver (str): the recipient address on the destination chain
-        timeout_height (Optional[dict[str, str]]): Timeout height relative to the current block
-            height. The timeout is disabled when set to 0.
-        timeout_timestamp (Optional[int | str]): Timeout timestamp (in nanoseconds) relative to the
-            current block timestamp. The timeout is disabled when set to 0.
+        timeout_height (Height): Timeout height relative to the current block height.
+            The timeout is disabled when set to 0.
+        timeout_timestamp (int): Timeout timestamp (in nanoseconds) relative to the current block timestamp.
+            The timeout is disabled when set to 0.
     """
 
-    type = "cosmos-sdk/MsgTransfer"
+    type_amino = "cosmos-sdk/MsgTransfer"
+    """"""
+    type_url = "/ibc.applications.transfer.v1.MsgTransfer"
     """"""
     source_port = "transfer"
     """"""
 
     source_channel: str = attr.ib()
-    token: Coin = attr.ib(converter=Coin.parse)  # type: ignore
+    token: Coin = attr.ib(converter=Coin.parse)
     sender: AccAddress = attr.ib()
-    receiver: AccAddress = attr.ib()
-    timeout_timestamp: str = attr.ib(default="0", converter=str)
-    timeout_height: str | dict = attr.ib(default="0")
+    receiver: str = attr.ib()  # stay str-typed because it may not be our address
+    timeout_height: Height = attr.ib(default=Height())
+    timeout_timestamp: int = attr.ib(default=0, converter=int)
+
+    def to_amino(self) -> dict:
+        return {
+            "type": self.type_amino,
+            "value": {
+                "source_port": self.source_port,
+                "source_channel": self.source_channel,
+                "token": self.token.to_amino(),
+                "sender": self.sender,
+                "receiver": self.receiver,
+                "timeout_height": self.timeout_height.to_amino(),
+                "timeout_timestamp": self.timeout_timestamp
+            }
+        }
 
     @classmethod
     def from_data(cls, data: dict) -> MsgTransfer:
-        data = data["value"]
         return cls(
             source_channel=data["source_channel"],
             token=Coin.from_data(data["token"]),
             sender=data["sender"],
             receiver=data["receiver"],
-            timeout_timestamp=data.get("timeout_timestamp", "0"),
-            timeout_height=data.get("timeout_height", "0"),
+            timeout_height=Height.from_data(data["timeout_height"]),
+            timeout_timestamp=data["timeout_timestamp"],
+        )
+
+    def to_proto(self) -> MsgTransfer_pb:
+        return MsgTransfer_pb(
+            source_port=self.source_port,
+            source_channel=self.source_channel,
+            token=self.token.to_proto(),
+            sender=self.sender,
+            receiver=self.receiver,
+            timeout_height=self.timeout_height.to_proto(),
+            timeout_timestamp=self.timeout_timestamp,
         )

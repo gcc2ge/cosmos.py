@@ -29,18 +29,19 @@ class MsgTransfer(Msg):
             The timeout is disabled when set to 0.
     """
 
-    type = "cosmos-sdk/MsgTransfer"
+    type_amino = "cosmos-sdk/MsgTransfer"
     """"""
     type_url = "/ibc.applications.transfer.v1.MsgTransfer"
     """"""
+    source_port = "transfer"
+    """"""
 
-    source_port: str = attr.ib()
     source_channel: str = attr.ib()
     token: Coin = attr.ib(converter=Coin.parse)
     sender: AccAddress = attr.ib()
     receiver: str = attr.ib()  # stay str-typed because it may not be our address
-    timeout_height: Height = attr.ib()
-    timeout_timestamp: int = attr.ib(converter=int)
+    timeout_height: Height = attr.ib(default=Height())
+    timeout_timestamp: int = attr.ib(default=0, converter=int)
 
     def to_amino(self) -> dict:
         return {
@@ -59,7 +60,6 @@ class MsgTransfer(Msg):
     @classmethod
     def from_data(cls, data: dict) -> MsgTransfer:
         return cls(
-            source_port=data["source_port"],
             source_channel=data["source_channel"],
             token=Coin.from_data(data["token"]),
             sender=data["sender"],
