@@ -26,11 +26,11 @@ class PublicKey(JSONSerializable, ABC):
     def from_proto(cls, proto: Any_pb):
         type_url = proto.type_url
         if type_url == SimplePublicKey.type_url:
-            return SimplePublicKey.from_proto(proto)
+            return SimplePublicKey.from_proto_string(proto.value)
         elif type_url == ValConsPubKey.type_url:
-            return ValConsPubKey.from_proto(proto)
+            return ValConsPubKey.from_proto_string(proto.value)
         elif type_url == LegacyAminoPubKey.type_url:
-            return LegacyAminoPubKey.from_proto(proto)
+            return LegacyAminoPubKey.from_proto_string(proto.value)
         raise TypeError(f"could not marshal PublicKey: type is incorrect")
 
     @classmethod
