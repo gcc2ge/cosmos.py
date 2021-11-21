@@ -162,7 +162,7 @@ class TxBody(JSONSerializable):
         return TxBody_pb(
             messages=[m.pack_any() for m in self.messages],
             memo=self.memo or "",
-            timeout_height=self.timeout_height,
+            timeout_height=self.timeout_height or 0,
         )
 
     @classmethod
