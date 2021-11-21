@@ -59,7 +59,7 @@ class SimplePublicKey(PublicKey):
     type_url = "/cosmos.crypto.secp256k1.PubKey"
     """Normal signature public key type."""
 
-    key: str = attr.ib()
+    key: bytes = attr.ib()
 
     def to_amino(self) -> dict:
         return {
@@ -73,6 +73,14 @@ class SimplePublicKey(PublicKey):
     @classmethod
     def from_data(cls, data: dict) -> SimplePublicKey:
         return cls(key=data["key"])
+
+    @classmethod
+    def from_proto(cls, proto: SimplePubKey_pb) -> SimplePublicKey:
+        return cls(proto.key)
+
+    @classmethod
+    def from_proto_string(cls, data: bytes) -> SimplePublicKey:
+        return cls.from_proto(SimplePubKey_pb.FromString(data))
 
     def to_proto(self) -> SimplePubKey_pb:
         return SimplePubKey_pb(key=self.key)
@@ -94,7 +102,7 @@ class ValConsPubKey(PublicKey):
     type_url = "/cosmos.crypto.ed25519.PubKey"
     """an ed25519 tendermint public key type."""
 
-    key: str = attr.ib()
+    key: bytes = attr.ib()
 
     def to_amino(self) -> dict:
         return {
@@ -112,6 +120,14 @@ class ValConsPubKey(PublicKey):
     def get_type(self) -> str:
         return self.type_url
 
+    @classmethod
+    def from_proto(cls, proto: ValConsPubKey_pb) -> ValConsPubKey:
+        return cls(proto.key)
+
+    @classmethod
+    def from_proto_string(cls, data: bytes) -> ValConsPubKey:
+        return cls.from_proto(ValConsPubKey_pb.FromString(data))
+
     def to_proto(self) -> ValConsPubKey_pb:
         return ValConsPubKey_pb(key=base64.b64encode(self.key))
 
@@ -120,6 +136,7 @@ class ValConsPubKey(PublicKey):
 
 
 # FIXME: NOT TESTED
+@attr.s
 class LegacyAminoPubKey(PublicKey):
     """Data object holding the Legacy Amino-typed public key component of an account or signature."""
 
@@ -137,7 +154,7 @@ class LegacyAminoPubKey(PublicKey):
             "type": self.type_amino,
             "value": {
                 "threshold": str(self.threshold),
-                "pubkeys": [pubkey.to_amino() for pubkey in self.public_keys]
+                "pubkeys": [pubkey for pubkey in self.public_keys]
             }
         }
 
@@ -151,9 +168,18 @@ class LegacyAminoPubKey(PublicKey):
     def get_type(self) -> str:
         return self.type_url
 
+    @classmethod
+    def from_proto(cls, proto: LegacyAminoPubKey_pb) -> LegacyAminoPubKey:
+        return cls(proto.threshold, [k.value for k in proto.public_keys])
+
+    @classmethod
+    def from_proto_string(cls, data: bytes) -> LegacyAminoPubKey:
+        return cls.from_proto(LegacyAminoPubKey_pb.FromString(data))
+
     def to_proto(self) -> LegacyAminoPubKey_pb:
         return LegacyAminoPubKey_pb(
-            threshold=self.threshold, public_keys=self.public_keys
+            threshold=self.threshold,
+            public_keys=[Any_pb(self.type_url, k) for k in self.public_keys],
         )
 
     def pack_any(self) -> Any_pb:
