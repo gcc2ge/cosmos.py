@@ -13,6 +13,7 @@ class BaseTerraData(JSONSerializable, Message):
 
     type: str
     type_url: str
+    proto_msg: Type[Message]
 
     def to_data(self) -> dict:
         return {"@type": self.type_url, **dict_to_data(self.__dict__)}
@@ -27,13 +28,13 @@ class BaseTerraData(JSONSerializable, Message):
 
     @classmethod
     def from_proto_bytes(cls: Type[_BaseTerraDataT], data: bytes) -> _BaseTerraDataT:
-        raise NotImplementedError
+        return cls.from_proto(cls.proto_msg.FromString(data))
 
     def to_proto(self) -> Message:
         raise NotImplementedError
 
 
-def create_demux(inputs: List[Type[BaseTerraData]]) -> Callable[[Dict[str, Any]], Any]:
+def create_demux(inputs: List[Type[_BaseTerraDataT]]) -> Callable[[Dict[str, Any]], _BaseTerraDataT]:
     table = {i.type_url: i.from_data for i in inputs}
 
     def from_data(data: dict) -> BaseTerraData:
@@ -42,7 +43,7 @@ def create_demux(inputs: List[Type[BaseTerraData]]) -> Callable[[Dict[str, Any]]
     return from_data
 
 
-def create_demux_proto(inputs: List[type[BaseTerraData]]) -> Callable[[Message], Any]:
+def create_demux_proto(inputs: List[Type[_BaseTerraDataT]]) -> Callable[[Message], _BaseTerraDataT]:
     table = {i.type_url: i.from_proto for i in inputs}
     table_bytes = {i.type_url: i.from_proto_bytes for i in inputs}
 

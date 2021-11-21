@@ -31,6 +31,8 @@ class MsgExecAuthorized(Msg):
     """"""
     type_url = "/cosmos.authz.v1beta1.MsgExec"
     """"""
+    proto_msg = MsgExec_pb
+    """"""
 
     grantee: AccAddress = attr.ib()
     msgs: List[Msg] = attr.ib()
@@ -44,17 +46,17 @@ class MsgExecAuthorized(Msg):
             }
         }
 
-    def to_data(self) -> dict:
-        return {
-            "@type": self.type_url,
-            "grantee": self.grantee,
-            "msgs": [msg.to_data() for msg in self.msgs],
-        }
-
     @classmethod
     def from_data(cls, data: dict) -> MsgExecAuthorized:
         return cls(
             grantee=data["grantee"], msgs=[Msg.from_data(md) for md in data["msgs"]]
+        )
+
+    @classmethod
+    def from_proto(cls, proto: MsgExec_pb) -> MsgExecAuthorized:
+        return cls(
+            grantee=AccAddress(proto.grantee),
+            msgs=[Msg.from_proto(m) for m in proto.msgs],
         )
 
     def to_proto(self) -> MsgExec_pb:
@@ -75,6 +77,8 @@ class MsgGrantAuthorization(Msg):
     """"""
     type_url = "/cosmos.authz.v1beta1.MsgGrant"
     """"""
+    proto_msg = MsgGrant_pb
+    """"""
 
     granter: AccAddress = attr.ib()
     grantee: AccAddress = attr.ib()
@@ -90,14 +94,6 @@ class MsgGrantAuthorization(Msg):
             }
         }
 
-    def to_data(self) -> dict:
-        return {
-            "@type": self.type_url,
-            "granter": self.granter,
-            "grantee": self.grantee,
-            "grant": self.grant.to_data(),
-        }
-
     @classmethod
     def from_data(cls, data: dict) -> MsgGrantAuthorization:
         data = data["value"]
@@ -108,6 +104,14 @@ class MsgGrantAuthorization(Msg):
                 authorization=Authorization.from_data(data["grant"]["authorization"]),
                 expiration=str(data["grant"]["expiration"]),
             ),
+        )
+
+    @classmethod
+    def from_proto(cls, proto: MsgGrant_pb) -> MsgGrantAuthorization:
+        return cls(
+            granter=AccAddress(proto.granter),
+            grantee=AccAddress(proto.grantee),
+            grant=AuthorizationGrant.from_proto(proto.grant),
         )
 
     def to_proto(self) -> MsgGrant_pb:

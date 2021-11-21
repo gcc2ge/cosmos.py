@@ -26,6 +26,8 @@ class MsgSwap(Msg):
     """"""
     type_url = "/terra.market.v1beta1.MsgSwap"
     """"""
+    proto_msg = MsgSwap_pb
+    """"""
     action = "swap"
     """"""
 
@@ -51,6 +53,14 @@ class MsgSwap(Msg):
             ask_denom=data["ask_denom"],
         )
 
+    @classmethod
+    def from_proto(cls, proto: MsgSwap_pb) -> MsgSwap:
+        return cls(
+            trader=AccAddress(proto.trader),
+            offer_coin=Coin.from_proto(proto.offer_coin),
+            ask_denom=proto.ask_denom,
+        )
+
     def to_proto(self) -> MsgSwap_pb:
         return MsgSwap_pb(
             trader=self.trader,
@@ -73,6 +83,8 @@ class MsgSwapSend(Msg):
     type_amino = "market/MsgSwapSend"
     """"""
     type_url = "/terra.market.v1beta1.MsgSwapSend"
+    """"""
+    proto_msg = MsgSwapSend_pb
     """"""
     action = "swapsend"
     """"""
@@ -100,6 +112,15 @@ class MsgSwapSend(Msg):
             to_address=data["to_address"],
             offer_coin=Coin.from_data(data["offer_coin"]),
             ask_denom=data["ask_denom"],
+        )
+
+    @classmethod
+    def from_proto(cls, proto: MsgSwapSend_pb) -> MsgSwapSend:
+        return cls(
+            from_address=AccAddress(proto.from_address),
+            to_address=AccAddress(proto.to_address),
+            offer_coin=Coin.from_proto(proto.offer_coin),
+            ask_denom=proto.ask_denom,
         )
 
     def to_proto(self) -> MsgSwapSend_pb:

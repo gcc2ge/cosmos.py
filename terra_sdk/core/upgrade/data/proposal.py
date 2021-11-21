@@ -15,11 +15,11 @@ from terra_proto.cosmos.upgrade.v1beta1 import (
 )
 
 from terra_sdk.core.upgrade.plan import Plan
-from terra_sdk.util.json import JSONSerializable
+from terra_sdk.util.base import BaseTerraData
 
 
 @attr.s
-class SoftwareUpgradeProposal(JSONSerializable):
+class SoftwareUpgradeProposal(BaseTerraData):
     title: str = attr.ib()
     description: str = attr.ib()
     plan: Optional[Plan] = attr.ib()
@@ -27,6 +27,8 @@ class SoftwareUpgradeProposal(JSONSerializable):
     type_amino = "upgrade/SoftwareUpgradeProposal"
     """"""
     type_url = "/cosmos.upgrade.v1beta1.SoftwareUpgradeProposal"
+    """"""
+    proto_msg = SoftwareUpgradeProposal_pb
     """"""
 
     def to_amino(self) -> dict:
@@ -47,20 +49,32 @@ class SoftwareUpgradeProposal(JSONSerializable):
             plan=Plan.from_data(data["plan"]) if data.get("plan") else None,
         )
 
+    @classmethod
+    def from_proto(cls, proto: SoftwareUpgradeProposal_pb) -> SoftwareUpgradeProposal:
+        return cls(
+            title=proto.title,
+            description=proto.description,
+            plan=Plan.from_proto(proto.plan),
+        )
+
     def to_proto(self) -> SoftwareUpgradeProposal_pb:
         return SoftwareUpgradeProposal_pb(
-            title=self.title, description=self.description, plan=self.plan.to_proto()
+            title=self.title,
+            description=self.description,
+            plan=self.plan.to_proto() if self.plan else None,
         )
 
 
 @attr.s
-class CancelSoftwareUpgradeProposal(JSONSerializable):
+class CancelSoftwareUpgradeProposal(BaseTerraData):
     title: str = attr.ib()
     description: str = attr.ib()
 
     type_amino = "upgrade/CancelSoftwareUpgradeProposal"
     """"""
     type_url = "/cosmos.upgrade.v1beta1.CancelSoftwareUpgradeProposal"
+    """"""
+    proto_msg = CancelSoftwareUpgradeProposal_pb
     """"""
 
     def to_amino(self) -> dict:
@@ -75,6 +89,10 @@ class CancelSoftwareUpgradeProposal(JSONSerializable):
     @classmethod
     def from_data(cls, data: dict) -> CancelSoftwareUpgradeProposal:
         return cls(title=data["title"], description=data["description"])
+
+    @classmethod
+    def from_proto(cls, proto: CancelSoftwareUpgradeProposal_pb) -> CancelSoftwareUpgradeProposal:
+        return cls(title=proto.title, description=proto.description)
 
     def to_proto(self) -> CancelSoftwareUpgradeProposal_pb:
         return CancelSoftwareUpgradeProposal_pb(

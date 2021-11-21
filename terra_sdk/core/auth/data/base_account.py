@@ -20,6 +20,7 @@ class BaseAccount(JSONSerializable):
 
     type_amino = "core/Account"
     type_url = "/cosmos.auth.v1beta1.BaseAccount"
+    proto_msg = BaseAccount_pb
 
     address: AccAddress = attr.ib()
     """"""
@@ -38,7 +39,7 @@ class BaseAccount(JSONSerializable):
             "type": self.type_amino,
             "value": {
                 "address": self.address,
-                "public_key": self.public_key.to_amino(),
+                "public_key": self.public_key.to_amino() if self.public_key else None,
                 "account_number": self.account_number,
                 "sequence": self.sequence
             }
@@ -47,7 +48,7 @@ class BaseAccount(JSONSerializable):
     def get_sequence(self) -> int:
         return self.sequence
 
-    def get_public_key(self) -> PublicKey:
+    def get_public_key(self) -> PublicKey | None:
         return self.public_key
 
     def to_data(self) -> dict:
@@ -63,10 +64,9 @@ class BaseAccount(JSONSerializable):
     def from_data(cls, data: dict) -> BaseAccount:
         return cls(
             address=data["address"],
-            public_key=data.get("public_key")
-            and PublicKey.from_data(data["public_key"]),
-            account_number=data.get("account_number") or 0,
-            sequence=data.get("sequence") or 0,
+            public_key=PublicKey.from_data(data["public_key"]) if "public_key" in data else None,
+            account_number=data.get("account_number", 0),
+            sequence=data.get("sequence", 0),
         )
 
     @classmethod

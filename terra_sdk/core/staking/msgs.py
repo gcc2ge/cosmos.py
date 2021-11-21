@@ -44,6 +44,8 @@ class MsgBeginRedelegate(Msg):
     """"""
     type_url = "/cosmos.staking.v1beta1.MsgBeginRedelegate"
     """"""
+    proto_msg = MsgBeginRedelegate_pb
+    """"""
     action = "begin_redelegate"
     """"""
 
@@ -72,6 +74,15 @@ class MsgBeginRedelegate(Msg):
             amount=Coin.from_data(data["amount"]),
         )
 
+    @classmethod
+    def from_proto(cls, proto: MsgBeginRedelegate_pb) -> MsgBeginRedelegate:
+        return cls(
+            delegator_address=AccAddress(proto.delegator_address),
+            validator_src_address=ValAddress(proto.validator_src_address),
+            validator_dst_address=ValAddress(proto.validator_dst_address),
+            amount=Coin.from_proto(proto.amount),
+        )
+
     def to_proto(self) -> MsgBeginRedelegate_pb:
         return MsgBeginRedelegate_pb(
             delegator_address=self.delegator_address,
@@ -94,6 +105,8 @@ class MsgDelegate(Msg):
     type_amino = "staking/MsgDelegate"
     """"""
     type_url = "/cosmos.staking.v1beta1.MsgDelegate"
+    """"""
+    proto_msg = MsgDelegate_pb
     """"""
     action = "delegate"
     """"""
@@ -120,6 +133,14 @@ class MsgDelegate(Msg):
             amount=Coin.from_data(data["amount"]),
         )
 
+    @classmethod
+    def from_proto(cls, proto: MsgDelegate_pb) -> MsgDelegate:
+        return cls(
+            delegator_address=AccAddress(proto.delegator_address),
+            validator_address=ValAddress(proto.validator_address),
+            amount=Coin.from_proto(proto.amount),
+        )
+
     def to_proto(self) -> MsgDelegate_pb:
         return MsgDelegate_pb(
             delegator_address=self.delegator_address,
@@ -141,6 +162,8 @@ class MsgUndelegate(Msg):
     type_amino = "staking/MsgUndelegate"
     """"""
     type_url = "/cosmos.staking.v1beta1.MsgUndelegate"
+    """"""
+    proto_msg = MsgUndelegate_pb
     """"""
     action = "begin_unbonding"
     """"""
@@ -167,6 +190,14 @@ class MsgUndelegate(Msg):
             amount=Coin.from_data(data["amount"]),
         )
 
+    @classmethod
+    def from_proto(cls, proto: MsgUndelegate_pb) -> MsgUndelegate:
+        return cls(
+            delegator_address=AccAddress(proto.delegator_address),
+            validator_address=ValAddress(proto.validator_address),
+            amount=Coin.from_proto(proto.amount),
+        )
+
     def to_proto(self) -> MsgUndelegate_pb:
         return MsgUndelegate_pb(
             delegator_address=self.delegator_address,
@@ -190,6 +221,8 @@ class MsgEditValidator(Msg):
     """"""
     type_url = "/cosmos.staking.v1beta1.MsgEditValidator"
     """"""
+    proto_msg = MsgEditValidator_pb
+    """"""
     action = "edit_validator"
     """"""
 
@@ -209,14 +242,25 @@ class MsgEditValidator(Msg):
             min_self_delegation=msd,
         )
 
+    @classmethod
+    def from_proto(cls, proto: MsgEditValidator_pb) -> MsgEditValidator:
+        return cls(
+            description=Description.from_proto(proto.description),
+            validator_address=ValAddress(proto.validator_address),
+            commission_rate=Dec(proto.commission_rate),
+            min_self_delegation=int(proto.min_self_delegation),
+        )
+
     def to_proto(self) -> MsgEditValidator_pb:
         return MsgEditValidator_pb(
             description=self.description.to_proto(),
             validator_address=self.validator_address,
-            commission_rate=str(self.commission_rate) if self.commission_rate else None,
-            min_self_delegation=str(self.min_self_delegation)
-            if self.min_self_delegation
-            else None,
+            commission_rate=str(self.commission_rate) if self.commission_rate else "0",
+            min_self_delegation=(
+                str(self.min_self_delegation)
+                if self.min_self_delegation
+                else "0"
+            ),
         )
 
 
@@ -238,6 +282,8 @@ class MsgCreateValidator(Msg):
     """"""
     type_url = "/cosmos.staking.v1beta1.MsgCreateValidator"
     """"""
+    msg_proto = MsgCreateValidator_pb
+    """"""
     action = "create_validator"
     """"""
 
@@ -257,17 +303,29 @@ class MsgCreateValidator(Msg):
             min_self_delegation=int(data["min_self_delegation"]),
             delegator_address=data["delegator_address"],
             validator_address=data["validator_address"],
-            pubkey=data["pubkey"],
+            pubkey=ValConsPubKey.from_data(data["pubkey"]),
             value=Coin.from_data(data["value"]),
+        )
+
+    @classmethod
+    def from_proto(cls, proto: MsgCreateValidator_pb) -> MsgCreateValidator:
+        return cls(
+            description=Description.from_proto(proto.description),
+            commission=CommissionRates.from_proto(proto.commission),
+            min_self_delegation=int(proto.min_self_delegation),
+            delegator_address=AccAddress(proto.delegator_address),
+            validator_address=ValAddress(proto.validator_address),
+            pubkey=ValConsPubKey.from_proto_bytes(proto.pubkey.value),
+            value=Coin.from_proto(proto.value),
         )
 
     def to_proto(self) -> MsgCreateValidator_pb:
         return MsgCreateValidator_pb(
             description=self.description.to_proto(),
             commission=self.commission.to_proto(),
-            min_self_delegation=self.min_self_delegation,
+            min_self_delegation=str(self.min_self_delegation),
             delegator_address=self.delegator_address,
             validator_address=self.validator_address,
-            pubkey=self.pubkey.to_proto(),
+            pubkey=self.pubkey.to_proto(),  # type: ignore
             value=self.value.to_proto(),
         )

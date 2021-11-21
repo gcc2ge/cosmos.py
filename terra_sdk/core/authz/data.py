@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import List, Optional
 
 import attr
+from betterproto import Message
 from dateutil import parser
 from terra_proto.cosmos.authz.v1beta1 import (
     GenericAuthorization as GenericAuthorization_pb,
@@ -44,6 +45,12 @@ class Authorization(BaseTerraData):
 
         return parse_authorization(data)
 
+    @staticmethod
+    def from_proto(proto: Message) -> Authorization:
+        from terra_sdk.util.parse_authorization import parse_authorization_proto
+
+        return parse_authorization_proto(proto.value)
+
 
 @attr.s
 class SendAuthorization(Authorization):
@@ -57,6 +64,9 @@ class SendAuthorization(Authorization):
     type_amino = "msgauth/SendAuthorization"
     """"""
     type_url = "/cosmos.bank.v1beta1.SendAuthorization"
+    """"""
+    proto_msg = SendAuthorization_pb
+    """"""
 
     spend_limit: Coins = attr.ib(converter=Coins)
 
@@ -68,12 +78,13 @@ class SendAuthorization(Authorization):
             }
         }
 
-    def to_data(self) -> dict:
-        return {"@type": self.type_url, "spend_limit": self.spend_limit.to_data()}
-
     @classmethod
     def from_data(cls, data: dict) -> SendAuthorization:
         return cls(spend_limit=Coins.from_data(data["spend_limit"]))
+
+    @classmethod
+    def from_proto(cls, proto: SendAuthorization_pb) -> SendAuthorization:
+        return SendAuthorization(Coins.from_proto(proto.spend_limit))
 
     def to_proto(self) -> SendAuthorization_pb:
         return SendAuthorization_pb(spend_limit=self.spend_limit.to_proto())
@@ -89,6 +100,9 @@ class GenericAuthorization(Authorization):
     type_amino = "msgauth/GenericAuthorization"
     """"""
     type_url = "/cosmos.authz.v1beta1.GenericAuthorization"
+    """"""
+    proto_msg = GenericAuthorization_pb
+    """"""
 
     msg: str = attr.ib()
 
@@ -96,16 +110,17 @@ class GenericAuthorization(Authorization):
         return {
             "type": self.type_amino,
             "value": {
-                "msg": self.msg()
+                "msg": self.msg
             }
         }
-
-    def to_data(self) -> dict:
-        return {"@type": self.type_url, "msg": self.msg}
 
     @classmethod
     def from_data(cls, data: dict) -> GenericAuthorization:
         return cls(msg=data["msg"])
+
+    @classmethod
+    def from_proto(cls, proto: GenericAuthorization_pb) -> GenericAuthorization:
+        return GenericAuthorization(proto.msg)
 
     def to_proto(self) -> GenericAuthorization_pb:
         return GenericAuthorization_pb(msg=self.msg)
@@ -140,6 +155,13 @@ class AuthorizationGrant(JSONSerializable):
             expiration=parser.parse(data["expiration"])
         )
 
+    @classmethod
+    def from_proto(cls, proto: Grant_pb) -> AuthorizationGrant:
+        return cls(
+            authorization=Authorization.from_proto(proto.authorization),
+            expiration=proto.expiration,
+        )
+
     def to_proto(self) -> Grant_pb:
         return Grant_pb(
             authorization=self.authorization.to_proto(),
@@ -161,50 +183,51 @@ class StakeAuthorizationValidators(JSONSerializable):
     def from_data(cls, data: dict) -> StakeAuthorizationValidators:
         return cls(address=data["address"])
 
+    @classmethod
+    def from_proto(cls, proto: StakeAuthorizationValidators_pb) -> StakeAuthorizationValidators:
+        return cls(address=[AccAddress(a) for a in proto.address])
+
     def to_proto(self):
         return StakeAuthorizationValidators_pb(address=self.address)
 
 
 @attr.s
 class StakeAuthorization(Authorization):
-    authorization_type: AuthorizationType = attr.ib()
-    max_tokens: Optional[Coin] = attr.ib(converter=Coin.parse, default=None)
-    allow_list: Optional[StakeAuthorizationValidators] = attr.ib(default=None)
-    deny_list: Optional[StakeAuthorizationValidators] = attr.ib(default=None)
-
     type_url = "/cosmos.staking.v1beta1.StakeAuthorization"
+    """"""
+    proto_msg = StakeAuthorization_pb
+    """"""
+
+    authorization_type: AuthorizationType = attr.ib()
+    max_tokens: Coin = attr.ib(converter=Coin.parse, default=None)
+    allow_list: StakeAuthorizationValidators = attr.ib(default=None)
+    deny_list: StakeAuthorizationValidators = attr.ib(default=None)
 
     def to_amino(self):
         raise Exception("Amino not supported")
-
-    def to_data(self) -> dict:
-        return {
-            "@type": self.type_url,
-            "authorization_type": self.authorization_type,
-            "max_tokens": self.max_tokens.to_data() if self.max_tokens else None,
-            "allow_list": self.allow_list.to_data() if self.allow_list else None,
-            "deny_list": self.deny_list.to_data() if self.deny_list else None,
-        }
 
     @classmethod
     def from_data(cls, data: dict) -> StakeAuthorization:
         return StakeAuthorization(
             authorization_type=data["authorization_type"],
-            max_tokens=Coins.from_data(data["max_tokens"])
-            if data.get("max_tokens")
-            else None,
-            allow_list=StakeAuthorizationValidators.from_data(data["allow_list"])
-            if data.get("allow_list")
-            else None,
-            deny_list=StakeAuthorizationValidators.from_data(data["deny_list"])
-            if data.get("deny_list")
-            else None,
+            max_tokens=Coin.from_data(data["max_tokens"]),
+            allow_list=StakeAuthorizationValidators.from_data(data.get("allow_list", [])),
+            deny_list=StakeAuthorizationValidators.from_data(data.get("deny_list", [])),
+        )
+
+    @classmethod
+    def from_proto(cls, proto: StakeAuthorization_pb) -> StakeAuthorization:
+        return StakeAuthorization(
+            authorization_type=proto.authorization_type,
+            max_tokens=Coin.from_proto(proto.max_tokens),
+            allow_list=StakeAuthorizationValidators.from_proto(proto.allow_list),
+            deny_list=StakeAuthorizationValidators.from_proto(proto.deny_list),
         )
 
     def to_proto(self) -> StakeAuthorization_pb:
         return StakeAuthorization_pb(
             authorization_type=self.authorization_type,
-            max_tokens=self.max_tokens.to_proto() if self.max_tokens else None,
-            allow_list=self.allow_list.to_proto() if self.allow_list else None,
-            deny_list=self.deny_list.to_proto() if self.deny_list else None,
+            max_tokens=self.max_tokens.to_proto(),
+            allow_list=self.allow_list.to_proto(),
+            deny_list=self.deny_list.to_proto(),
         )

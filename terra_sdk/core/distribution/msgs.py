@@ -40,6 +40,8 @@ class MsgSetWithdrawAddress(Msg):
     """"""
     type_url = "/cosmos.distribution.v1beta1.MsgSetWithdrawAddress"
     """"""
+    proto_msg = MsgSetWithdrawAddress_pb
+    """"""
     action = "set_withdraw_address"
     """"""
 
@@ -55,18 +57,18 @@ class MsgSetWithdrawAddress(Msg):
             }
         }
 
-    def to_data(self) -> dict:
-        return {
-            "@type": self.type_url,
-            "delegator_address": self.delegator_address,
-            "withdraw_address": self.withdraw_address,
-        }
-
     @classmethod
     def from_data(cls, data: dict) -> MsgSetWithdrawAddress:
         return cls(
             delegator_address=data["delegator_address"],
             withdraw_address=data["withdraw_address"],
+        )
+
+    @classmethod
+    def from_proto(cls, proto: MsgSetWithdrawAddress_pb) -> MsgSetWithdrawAddress:
+        return cls(
+            delegator_address=AccAddress(proto.delegator_address),
+            withdraw_address=AccAddress(proto.withdraw_address),
         )
 
     def to_proto(self) -> MsgSetWithdrawAddress_pb:
@@ -89,6 +91,8 @@ class MsgWithdrawDelegationReward(Msg):
     """"""
     type_url = "/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward"
     """"""
+    proto_msg = MsgWithdrawDelegatorReward_pb
+    """"""
     action = "withdraw_delegation_reward"
     """"""
 
@@ -100,15 +104,8 @@ class MsgWithdrawDelegationReward(Msg):
             "type": self.type_amino,
             "value": {
                 "delegator_address": self.delegator_address,
-                "withdraw_address": self.withdraw_address
+                "validator_address": self.validator_address,
             }
-        }
-
-    def to_data(self) -> dict:
-        return {
-            "@type": self.type_url,
-            "delegator_address": self.delegator_address,
-            "withdraw_address": self.withdraw_address
         }
 
     @classmethod
@@ -116,6 +113,13 @@ class MsgWithdrawDelegationReward(Msg):
         return cls(
             delegator_address=data["delegator_address"],
             validator_address=data["validator_address"]
+        )
+
+    @classmethod
+    def from_proto(cls, proto: MsgWithdrawDelegatorReward_pb) -> MsgWithdrawDelegationReward:
+        return cls(
+            delegator_address=AccAddress(proto.delegator_address),
+            validator_address=ValAddress(proto.validator_address),
         )
 
     def to_proto(self) -> MsgWithdrawDelegatorReward_pb:
@@ -137,6 +141,8 @@ class MsgWithdrawValidatorCommission(Msg):
     """"""
     type_url = "/cosmos.distribution.v1beta1.MsgWithdrawValidatorCommission"
     """"""
+    proto_msg = MsgWithdrawValidatorCommission_pb
+    """"""
     action = "withdraw_validator_commission"
     """"""
 
@@ -150,12 +156,16 @@ class MsgWithdrawValidatorCommission(Msg):
             }
         }
 
-    def to_data(self) -> dict:
-        return {"@type": self.type_url, "validator_address": self.validator_address}
-
     @classmethod
     def from_data(cls, data: dict) -> MsgWithdrawValidatorCommission:
         return cls(validator_address=data["validator_address"])
+
+    @classmethod
+    def from_proto(
+        cls,
+        proto: MsgWithdrawValidatorCommission_pb,
+    ) -> MsgWithdrawValidatorCommission:
+        return cls(validator_address=ValAddress(proto.validator_address))
 
     def to_proto(self) -> MsgWithdrawValidatorCommission_pb:
         return MsgWithdrawValidatorCommission_pb(
@@ -176,6 +186,8 @@ class MsgFundCommunityPool(Msg):
     """"""
     type_url = "/cosmos.distribution.v1beta1.MsgFundCommunityPool"
     """"""
+    proto_msg = MsgFundCommunityPool_pb
+    """"""
 
     depositor: AccAddress = attr.ib()
     amount: Coins = attr.ib(converter=Coins)
@@ -189,16 +201,16 @@ class MsgFundCommunityPool(Msg):
             }
         }
 
-    def to_data(self) -> dict:
-        return {
-            "@type": self.type_url,
-            "depositor": self.depositor,
-            "amount": self.amount.to_data(),
-        }
-
     @classmethod
     def from_data(cls, data: dict) -> MsgFundCommunityPool:
         return cls(depositor=data["depositor"], amount=Coins.from_data(data["amount"]))
+
+    @classmethod
+    def from_proto(cls, proto: MsgFundCommunityPool_pb) -> MsgFundCommunityPool:
+        return cls(
+            depositor=AccAddress(proto.depositor),
+            amount=Coins.from_proto(proto.amount),
+        )
 
     def to_proto(self) -> MsgFundCommunityPool_pb:
         return MsgFundCommunityPool_pb(

@@ -46,6 +46,14 @@ class CommissionRates(JSONSerializable):
             max_change_rate=data["max_change_rate"],
         )
 
+    @classmethod
+    def from_proto(cls, proto: CommissionRates_pb) -> CommissionRates:
+        return cls(
+            rate=Dec(proto.rate),
+            max_rate=Dec(proto.max_rate),
+            max_change_rate=Dec(proto.max_change_rate),
+        )
+
     def to_proto(self) -> CommissionRates_pb:
         return CommissionRates_pb(
             rate=str(self.rate),
@@ -122,6 +130,16 @@ class Description(JSONSerializable):
             data.get("website"),
             data.get("details"),
             data.get("security_contact"),
+        )
+
+    @classmethod
+    def from_proto(cls, proto: Description_pb) -> Description:
+        return cls(
+            proto.moniker,
+            proto.identity,
+            proto.website,
+            proto.details,
+            proto.security_contact,
         )
 
     def to_proto(self) -> Description_pb:

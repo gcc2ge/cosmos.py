@@ -2,20 +2,23 @@ from __future__ import annotations
 
 import base64
 from abc import ABC, abstractmethod
-from typing import List, Optional, Union
+from typing import TypeVar
 
 import attr
+from betterproto import Message
 from betterproto.lib.google.protobuf import Any as Any_pb
 from terra_proto.cosmos.crypto.ed25519 import PubKey as ValConsPubKey_pb
 from terra_proto.cosmos.crypto.multisig import LegacyAminoPubKey as LegacyAminoPubKey_pb
 from terra_proto.cosmos.crypto.secp256k1 import PubKey as SimplePubKey_pb
 
-from terra_sdk.util.json import JSONSerializable
+from terra_sdk.util.base import BaseTerraData
 
 __all__ = ["PublicKey", "SimplePublicKey", "ValConsPubKey", "LegacyAminoPubKey"]
 
+_PublicKeyT = TypeVar("_PublicKeyT", bound="PublicKey")
 
-class PublicKey(JSONSerializable, ABC):
+
+class PublicKey(BaseTerraData, ABC):
     """Data object holding the public key component of an account or signature."""
 
     @abstractmethod
@@ -23,30 +26,24 @@ class PublicKey(JSONSerializable, ABC):
         return self.type_url
 
     @classmethod
-    def from_proto(cls, proto: Any_pb):
-        type_url = proto.type_url
-        if type_url == SimplePublicKey.type_url:
-            return SimplePublicKey.from_proto_string(proto.value)
-        elif type_url == ValConsPubKey.type_url:
-            return ValConsPubKey.from_proto_string(proto.value)
-        elif type_url == LegacyAminoPubKey.type_url:
-            return LegacyAminoPubKey.from_proto_string(proto.value)
-        raise TypeError(f"could not marshal PublicKey: type is incorrect")
+    def from_proto(cls, proto: Message):
+        from terra_sdk.util.parse_public_key import parse_pub_key_proto
+
+        return parse_pub_key_proto(proto)
 
     @classmethod
     def from_data(cls, data: dict):
-        type_url = data["@type"]
-        if type_url == SimplePublicKey.type_url:
-            return SimplePublicKey.from_data(data)
-        elif type_url == ValConsPubKey.type_url:
-            return ValConsPubKey.from_data(data)
-        elif type_url == LegacyAminoPubKey.type_url:
-            return LegacyAminoPubKey.from_data(data)
-        raise TypeError(f"could not unmarshal PublicKey: type is incorrect")
+        from terra_sdk.util.parse_public_key import parse_pub_key
+
+        return parse_pub_key(data)
 
     @abstractmethod
     def pack_any(self) -> Any_pb:
-        raise NotImplementedError
+        ...
+
+    @abstractmethod
+    def to_amino(self: _PublicKeyT) -> _PublicKeyT:
+        ...
 
 
 @attr.s
@@ -55,20 +52,15 @@ class SimplePublicKey(PublicKey):
 
     type_amino = "tendermint/PubKeySecp256k1"
     """"""
-
     type_url = "/cosmos.crypto.secp256k1.PubKey"
+    """"""
+    proto_msg = SimplePubKey_pb
     """Normal signature public key type."""
 
     key: bytes = attr.ib()
 
     def to_amino(self) -> dict:
-        return {
-            "type": self.type_amino,
-            "value": self.key
-        }
-
-    def to_data(self) -> dict:
-        return {"key": self.key}
+        return {"type": self.type_amino, "value": self.key}
 
     @classmethod
     def from_data(cls, data: dict) -> SimplePublicKey:
@@ -77,10 +69,6 @@ class SimplePublicKey(PublicKey):
     @classmethod
     def from_proto(cls, proto: SimplePubKey_pb) -> SimplePublicKey:
         return cls(proto.key)
-
-    @classmethod
-    def from_proto_string(cls, data: bytes) -> SimplePublicKey:
-        return cls.from_proto(SimplePubKey_pb.FromString(data))
 
     def to_proto(self) -> SimplePubKey_pb:
         return SimplePubKey_pb(key=self.key)
@@ -98,20 +86,15 @@ class ValConsPubKey(PublicKey):
 
     type_amino = "tendermint/PubKeyEd25519"
     """"""
-
     type_url = "/cosmos.crypto.ed25519.PubKey"
+    """"""
+    proto_msg = ValConsPubKey_pb
     """an ed25519 tendermint public key type."""
 
     key: bytes = attr.ib()
 
     def to_amino(self) -> dict:
-        return {
-            "type": self.type_amino,
-            "value": self.key
-        }
-
-    def to_data(self) -> dict:
-        return {"key": self.key}
+        return {"type": self.type_amino, "value": self.key}
 
     @classmethod
     def from_data(cls, data: dict) -> ValConsPubKey:
@@ -123,10 +106,6 @@ class ValConsPubKey(PublicKey):
     @classmethod
     def from_proto(cls, proto: ValConsPubKey_pb) -> ValConsPubKey:
         return cls(proto.key)
-
-    @classmethod
-    def from_proto_string(cls, data: bytes) -> ValConsPubKey:
-        return cls.from_proto(ValConsPubKey_pb.FromString(data))
 
     def to_proto(self) -> ValConsPubKey_pb:
         return ValConsPubKey_pb(key=base64.b64encode(self.key))
@@ -142,24 +121,22 @@ class LegacyAminoPubKey(PublicKey):
 
     type_amino = "tendermint/PubKeyMultisigThreshold"
     """"""
-
     type_url = "/cosmos.crypto.multisig.LegacyAminoPubKey"
+    """"""
+    proto_msg = LegacyAminoPubKey_pb
     """Multisig public key type."""
 
     threshold: int = attr.ib(converter=int)
-    public_keys: List[bytes] = attr.ib(factory=List)
+    public_keys: list[bytes] = attr.ib(factory=list)
 
     def to_amino(self) -> dict:
         return {
             "type": self.type_amino,
             "value": {
                 "threshold": str(self.threshold),
-                "pubkeys": [pubkey for pubkey in self.public_keys]
-            }
+                "pubkeys": [pubkey for pubkey in self.public_keys],
+            },
         }
-
-    def to_data(self) -> dict:
-        return {"threshold": self.threshold, "public_keys": self.public_keys}
 
     @classmethod
     def from_data(cls, data: dict) -> LegacyAminoPubKey:
@@ -171,10 +148,6 @@ class LegacyAminoPubKey(PublicKey):
     @classmethod
     def from_proto(cls, proto: LegacyAminoPubKey_pb) -> LegacyAminoPubKey:
         return cls(proto.threshold, [k.value for k in proto.public_keys])
-
-    @classmethod
-    def from_proto_string(cls, data: bytes) -> LegacyAminoPubKey:
-        return cls.from_proto(LegacyAminoPubKey_pb.FromString(data))
 
     def to_proto(self) -> LegacyAminoPubKey_pb:
         return LegacyAminoPubKey_pb(

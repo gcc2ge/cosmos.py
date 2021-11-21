@@ -4,7 +4,7 @@ from __future__ import annotations
 
 __all__ = ["Plan"]
 
-import datetime
+from datetime import datetime
 from typing import Any, Optional
 
 import attr
@@ -37,7 +37,7 @@ class Plan(JSONSerializable):
     def from_data(cls, data: dict) -> Plan:
         return cls(
             name=data["name"],
-            time=parser.parse(data["time"]) if data.get("time") else None,
+            time=parser.parse(data["time"]) if "time" in data else None,
             height=data["height"],
             info=data["info"],
             upgrade_client_state=data["upgrade_client_state"]
@@ -45,14 +45,24 @@ class Plan(JSONSerializable):
             else None,
         )
 
+    @classmethod
+    def from_proto(cls, proto: Plan_pb) -> Plan:
+        return cls(
+            name=proto.name,
+            time=proto.time,
+            height=str(proto.height),
+            info=proto.info,
+            upgrade_client_state=proto.upgrade_client_state,
+        )
+
     def to_proto(self) -> Plan_pb:
-        ucs = self.get("upgrade_client_state")
+        ucs = self.upgrade_client_state
         if ucs is not None:
             ucs = Any_pb(type_url=ucs["type_url"], value=bytes(ucs.to_proto()))
         return Plan_pb(
             name=self.name,
             time=self.time,
-            height=self.height,
+            height=int(self.height),
             info=self.info,
             upgraded_client_state=ucs if ucs else None,
         )

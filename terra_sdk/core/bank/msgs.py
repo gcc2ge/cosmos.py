@@ -34,6 +34,8 @@ class MsgSend(Msg):
     """"""
     type_url = "/cosmos.bank.v1beta1.MsgSend"
     """"""
+    proto_msg = MsgSend_pb
+    """"""
     action = "send"
     """"""
 
@@ -59,25 +61,13 @@ class MsgSend(Msg):
             amount=Coins.from_data(data["amount"]),
         )
 
-    def to_data(self) -> dict:
-        return {
-            "@type": self.type_url,
-            "from_address": self.from_address,
-            "to_address": self.to_address,
-            "amount": self.amount.to_data(),
-        }
-
     @classmethod
     def from_proto(cls, proto: MsgSend_pb) -> MsgSend:
         return cls(
-            from_address=proto.from_address,
-            to_address=proto.to_address,
+            from_address=AccAddress(proto.from_address),
+            to_address=AccAddress(proto.to_address),
             amount=Coins.from_proto(proto.amount),
         )
-
-    @classmethod
-    def from_proto_bytes(cls, data: bytes) -> MsgSend:
-        return cls.from_proto(MsgSend_pb.FromString(data))
 
     def to_proto(self) -> MsgSend_pb:
         proto = MsgSend_pb()
@@ -118,7 +108,7 @@ class MultiSendInput(JSONSerializable):
 
     @classmethod
     def from_proto(cls, proto: Input_pb) -> MultiSendInput:
-        return cls(address=proto.address, coins=Coins.from_proto(proto.coins))
+        return cls(address=AccAddress(proto.address), coins=Coins.from_proto(proto.coins))
 
     @classmethod
     def from_proto_bytes(cls, data: bytes) -> MultiSendInput:
@@ -162,7 +152,7 @@ class MultiSendOutput(JSONSerializable):
 
     @classmethod
     def from_proto(cls, proto: Output_pb) -> MultiSendOutput:
-        return cls(address=proto.address, coins=Coins.from_proto(proto.coins))
+        return cls(address=AccAddress(proto.address), coins=Coins.from_proto(proto.coins))
 
     @classmethod
     def from_proto_bytes(cls, data: bytes) -> MultiSendOutput:
@@ -218,6 +208,8 @@ class MsgMultiSend(Msg):
     """"""
     type_url = "/cosmos.bank.v1beta1.MsgMultiSend"
     """"""
+    proto_msg = MsgMultiSend_pb
+    """"""
     action = "multisend"
     """"""
 
@@ -233,13 +225,6 @@ class MsgMultiSend(Msg):
             }
         }
 
-    def to_data(self) -> dict:
-        return {
-            "@type": self.type_url,
-            "inputs": [mi.to_data() for mi in self.inputs],
-            "outputs": [mo.to_data() for mo in self.outputs],
-        }
-
     @classmethod
     def from_data(cls, data: dict) -> MsgMultiSend:
         return cls(
@@ -253,10 +238,6 @@ class MsgMultiSend(Msg):
             inputs=[MultiSendInput.from_proto(x) for x in proto.inputs],
             outputs=[MultiSendOutput.from_proto(x) for x in proto.outputs],
         )
-
-    @classmethod
-    def from_proto_bytes(cls, data: bytes) -> MsgMultiSend:
-        return cls.from_proto(MsgMultiSend_pb.FromString(data))
 
     def to_proto(self) -> MsgMultiSend_pb:
         return MsgMultiSend_pb(

@@ -29,6 +29,8 @@ class MsgSubmitProposal(Msg):
     """"""
     type_url = "/cosmos.gov.v1beta1.MsgSubmitProposal"
     """"""
+    proto_msg = MsgSubmitProposal_pb
+    """"""
     action = "submit_proposal"
     """"""
 
@@ -57,6 +59,17 @@ class MsgSubmitProposal(Msg):
             proposer=data["proposer"],
         )
 
+    @classmethod
+    def from_proto(cls, proto: MsgSubmitProposal_pb) -> MsgSubmitProposal:
+        from terra_sdk.util.parse_content import parse_content_proto
+
+        content = parse_content_proto(proto.content)
+        return cls(
+            content=content,
+            initial_deposit=Coins.from_proto(proto.initial_deposit),
+            proposer=AccAddress(proto.proposer),
+        )
+
     def to_proto(self) -> MsgSubmitProposal_pb:
         return MsgSubmitProposal_pb(
             content=self.content.to_proto(),
@@ -79,6 +92,8 @@ class MsgDeposit(Msg):
     """"""
     type_url = "/cosmos.gov.v1beta1.MsgDeposit"
     """"""
+    proto_msg = MsgDeposit_pb
+    """"""
     action = "deposit"
     """"""
 
@@ -96,22 +111,20 @@ class MsgDeposit(Msg):
             }
         }
 
-    def to_data(self) -> dict:
-        return {
-            "type": self.type,
-            "value": {
-                "proposal_id": str(self.proposal_id),
-                "depositor": self.depositor,
-                "amount": self.amount.to_data(),
-            },
-        }
-
     @classmethod
     def from_data(cls, data: dict) -> MsgDeposit:
         return cls(
             proposal_id=data["proposal_id"],
             depositor=data["depositor"],
             amount=Coins.from_data(data["amount"]),
+        )
+
+    @classmethod
+    def from_proto(cls, proto: MsgDeposit_pb) -> MsgDeposit:
+        return cls(
+            proposal_id=proto.proposal_id,
+            depositor=AccAddress(proto.depositor),
+            amount=Coins.from_proto(proto.amount),
         )
 
     def to_proto(self) -> MsgDeposit_pb:
@@ -136,6 +149,8 @@ class MsgVote(Msg):
     type_amino = "gov/MsgVote"
     """"""
     type_url = "/cosmos.gov.v1beta1.MsgVote"
+    """"""
+    proto_msg = MsgVote_pb
     """"""
     action = "vote"
     """"""
@@ -182,16 +197,6 @@ class MsgVote(Msg):
             }
         }
 
-    def to_data(self) -> dict:
-        return {
-            "type": self.type,
-            "value": {
-                "proposal_id": str(self.proposal_id),
-                "voter": self.voter,
-                "option": self.option,
-            },
-        }
-
     @classmethod
     def from_data(cls, data: dict) -> MsgVote:
         return cls(
@@ -200,7 +205,15 @@ class MsgVote(Msg):
             option=data["option"],
         )
 
+    @classmethod
+    def from_proto(cls, proto: MsgVote_pb) -> MsgVote:
+        return cls(
+            proposal_id=proto.proposal_id,
+            voter=AccAddress(proto.voter),
+            option=proto.option,
+        )
+
     def to_proto(self) -> MsgVote_pb:
         return MsgVote_pb(
-            proposal_id=self.proposal_id, voter=self.voter, options=self.option
+            proposal_id=self.proposal_id, voter=self.voter, option=self.option
         )

@@ -22,6 +22,8 @@ class MsgUnjail(Msg):
     """"""
     type_url = "/cosmos.slashing.v1beta1.MsgUnjail"
     """"""
+    proto_msg = MsgUnjail_pb
+    """"""
     action = "unjail"
     """"""
 
@@ -38,6 +40,10 @@ class MsgUnjail(Msg):
     @classmethod
     def from_data(cls, data: dict) -> MsgUnjail:
         return cls(address=data["address"])
+
+    @classmethod
+    def from_proto(cls, proto: MsgUnjail_pb) -> MsgUnjail:
+        return cls(address=ValAddress(proto.validator_addr))
 
     def to_proto(self) -> MsgUnjail_pb:
         return MsgUnjail_pb(validator_addr=self.address)

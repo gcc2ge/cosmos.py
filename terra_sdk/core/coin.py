@@ -68,6 +68,9 @@ class Coin(JSONSerializable):
     def to_data(self) -> dict:
         return {"denom": self.denom, "amount": str(self.amount)}
 
+    def to_dict(self) -> dict:
+        return {"denom": self.denom, "amount": str(self.amount)}
+
     @classmethod
     def from_proto(cls, proto: Coin_pb) -> Coin:
         return cls(proto.denom, proto.amount)  # type: ignore

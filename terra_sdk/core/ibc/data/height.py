@@ -27,6 +27,13 @@ class Height(JSONSerializable):
             revision_height=data["revision_height"],
         )
 
+    @classmethod
+    def from_proto(cls, proto: Height_pb) -> Height:
+        return cls(
+            revision_number=proto.revision_number,
+            revision_height=proto.revision_height,
+        )
+
     def to_proto(self) -> Height_pb:
         return Height_pb(
             revision_number=self.revision_number, revision_height=self.revision_height

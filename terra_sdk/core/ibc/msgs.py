@@ -34,6 +34,8 @@ class MsgTransfer(Msg):
     """"""
     type_url = "/ibc.applications.transfer.v1.MsgTransfer"
     """"""
+    proto_msg = MsgTransfer_pb
+    """"""
     source_port = "transfer"
     """"""
 
@@ -67,6 +69,17 @@ class MsgTransfer(Msg):
             receiver=data["receiver"],
             timeout_height=Height.from_data(data["timeout_height"]),
             timeout_timestamp=data["timeout_timestamp"],
+        )
+
+    @classmethod
+    def from_proto(cls, proto: MsgTransfer_pb) -> MsgTransfer:
+        return cls(
+            source_channel=proto.source_channel,
+            token=Coin.from_proto(proto.token),
+            sender=AccAddress(proto.sender),
+            receiver=proto.receiver,
+            timeout_height=Height.from_proto(proto.timeout_height),
+            timeout_timestamp=proto.timeout_timestamp,
         )
 
     def to_proto(self) -> MsgTransfer_pb:
