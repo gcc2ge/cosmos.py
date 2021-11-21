@@ -1,5 +1,4 @@
 """Some useful base classes to inherit from."""
-from abc import abstractmethod
 from typing import Any, Callable, Dict, List, Type, TypeVar
 
 from betterproto import Message
@@ -18,24 +17,20 @@ class BaseTerraData(JSONSerializable, Message):
     def to_data(self) -> dict:
         return {"@type": self.type_url, **dict_to_data(self.__dict__)}
 
-    @staticmethod
-    @abstractmethod
-    def from_data(data: dict) -> "BaseTerraData":
-        ...
-
-    @staticmethod
-    @abstractmethod
-    def from_proto(data: Message) -> "BaseTerraData":
-        ...
+    @classmethod
+    def from_data(cls: Type[_BaseTerraDataT], data: dict) -> _BaseTerraDataT:
+        raise NotImplementedError
 
     @classmethod
-    @abstractmethod
-    def from_proto_bytes(cls: Type[_BaseTerraDataT], data: bytes) -> _BaseTerraDataT:
-        ...
+    def from_proto(cls: Type[_BaseTerraDataT], data: Message) -> _BaseTerraDataT:
+        raise NotImplementedError
 
-    @abstractmethod
+    @classmethod
+    def from_proto_bytes(cls: Type[_BaseTerraDataT], data: bytes) -> _BaseTerraDataT:
+        raise NotImplementedError
+
     def to_proto(self) -> Message:
-        ...
+        raise NotImplementedError
 
 
 def create_demux(inputs: List[Type[BaseTerraData]]) -> Callable[[Dict[str, Any]], Any]:
