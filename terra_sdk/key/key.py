@@ -48,7 +48,7 @@ def address_from_public_key(public_key: PublicKey) -> bytes:
     return rip.digest()
 
 
-def pubkey_from_public_key(public_key: bytes) -> bytes:
+def pubkey_from_public_key(public_key: PublicKey) -> bytes:
     arr = bytearray.fromhex(BECH32_PUBKEY_DATA_PREFIX)
     arr += bytearray(public_key.key)
     return bytes(arr)
@@ -74,9 +74,9 @@ class Key:
     pubkeys.
     """
 
-    def __init__(self, public_key: Optional[bytes] = None):
+    def __init__(self, public_key: Optional[PublicKey] = None):
         self.public_key = public_key
-        if public_key:
+        if public_key is not None:
             self.raw_address = address_from_public_key(public_key)
             self.raw_pubkey = pubkey_from_public_key(public_key)
 
