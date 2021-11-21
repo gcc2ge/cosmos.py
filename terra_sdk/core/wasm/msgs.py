@@ -58,10 +58,7 @@ class MsgStoreCode(Msg):
     def to_amino(self) -> dict:
         return {
             "type": self.type_amino,
-            "value": {
-                "sender": self.sender,
-                "wasm_byte_code": self.wasm_byte_code
-            }
+            "value": {"sender": self.sender, "wasm_byte_code": self.wasm_byte_code},
         }
 
     @classmethod
@@ -244,6 +241,10 @@ class MsgExecuteContract(Msg):
             coins=Coins.from_proto(proto.coins),
         )
 
+    @classmethod
+    def from_proto_bytes(cls, data: bytes) -> MsgExecuteContract:
+        return cls.from_proto(MsgExecuteContract_pb.FromString(data))
+
 
 @attr.s
 class MsgMigrateContract(Msg):
@@ -273,8 +274,8 @@ class MsgMigrateContract(Msg):
                 "admin": self.admin,
                 "contract": self.contract,
                 "new_code_id": str(self.new_code_id),
-                "migrate_msg": remove_none(self.migrate_msg)
-            }
+                "migrate_msg": remove_none(self.migrate_msg),
+            },
         }
 
     def to_data(self) -> dict:
@@ -324,8 +325,8 @@ class MsgUpdateContractAdmin(Msg):
             "value": {
                 "admin": self.admin,
                 "new_admin": self.new_admin,
-                "contract": self.contract
-            }
+                "contract": self.contract,
+            },
         }
 
     @classmethod
@@ -362,10 +363,7 @@ class MsgClearContractAdmin(Msg):
     def to_amino(self) -> dict:
         return {
             "type": self.type_amino,
-            "value": {
-                "admin": self.admin,
-                "contract": self.contract
-            }
+            "value": {"admin": self.admin, "contract": self.contract},
         }
 
     @classmethod

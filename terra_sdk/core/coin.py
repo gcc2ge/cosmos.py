@@ -72,6 +72,10 @@ class Coin(JSONSerializable):
     def from_proto(cls, proto: Coin_pb) -> Coin:
         return cls(proto.denom, proto.amount)  # type: ignore
 
+    @classmethod
+    def from_proto_bytes(cls, data: bytes) -> Coin:
+        return cls.from_proto(Coin_pb.FromString(data))
+
     def to_proto(self) -> Coin_pb:
         coin = Coin_pb()
         coin.denom = self.denom

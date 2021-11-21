@@ -78,6 +78,10 @@ class BaseAccount(JSONSerializable):
             sequence=proto.sequence,
         )
 
+    @classmethod
+    def from_proto_bytes(cls, data: bytes) -> BaseAccount:
+        return cls.from_proto(BaseAccount_pb.FromString(data))
+
     def to_proto(self) -> BaseAccount_pb:
         return BaseAccount_pb(
             address=self.address,

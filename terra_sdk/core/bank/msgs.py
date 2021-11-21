@@ -75,16 +75,16 @@ class MsgSend(Msg):
             amount=Coins.from_proto(proto.amount),
         )
 
+    @classmethod
+    def from_proto_bytes(cls, data: bytes) -> MsgSend:
+        return cls.from_proto(MsgSend_pb.FromString(data))
+
     def to_proto(self) -> MsgSend_pb:
         proto = MsgSend_pb()
         proto.from_address = self.from_address
         proto.to_address = self.to_address
         proto.amount = [c.to_proto() for c in self.amount]
         return proto
-
-    @classmethod
-    def unpack_any(cls, any: Any) -> MsgSend:
-        return MsgSend.from_proto(any)
 
 
 @attr.s
@@ -107,10 +107,7 @@ class MultiSendInput(JSONSerializable):
     """Coins to be sent / received."""
 
     def to_amino(self) -> dict:
-        return {
-            "address": self.address,
-            "coins": self.coins.to_amino()
-        }
+        return {"address": self.address, "coins": self.coins.to_amino()}
 
     def to_data(self) -> dict:
         return {"address": self.address, "coins": self.coins.to_data()}
@@ -122,6 +119,10 @@ class MultiSendInput(JSONSerializable):
     @classmethod
     def from_proto(cls, proto: Input_pb) -> MultiSendInput:
         return cls(address=proto.address, coins=Coins.from_proto(proto.coins))
+
+    @classmethod
+    def from_proto_bytes(cls, data: bytes) -> MultiSendInput:
+        return cls.from_proto(Input_pb.FromString(data))
 
     def to_proto(self) -> Input_pb:
         proto = Input_pb()
@@ -150,10 +151,7 @@ class MultiSendOutput(JSONSerializable):
     """Coins to be sent / received."""
 
     def to_amino(self) -> dict:
-        return {
-            "address": self.address,
-            "coins": self.coins.to_amino()
-        }
+        return {"address": self.address, "coins": self.coins.to_amino()}
 
     @classmethod
     def from_data(cls, data: dict):
@@ -165,6 +163,10 @@ class MultiSendOutput(JSONSerializable):
     @classmethod
     def from_proto(cls, proto: Output_pb) -> MultiSendOutput:
         return cls(address=proto.address, coins=Coins.from_proto(proto.coins))
+
+    @classmethod
+    def from_proto_bytes(cls, data: bytes) -> MultiSendOutput:
+        return cls.from_proto(Output_pb.FromString(data))
 
     def to_proto(self) -> Output_pb:
         proto = Output_pb()
@@ -251,6 +253,10 @@ class MsgMultiSend(Msg):
             inputs=[MultiSendInput.from_proto(x) for x in proto.inputs],
             outputs=[MultiSendOutput.from_proto(x) for x in proto.outputs],
         )
+
+    @classmethod
+    def from_proto_bytes(cls, data: bytes) -> MsgMultiSend:
+        return cls.from_proto(MsgMultiSend_pb.FromString(data))
 
     def to_proto(self) -> MsgMultiSend_pb:
         return MsgMultiSend_pb(

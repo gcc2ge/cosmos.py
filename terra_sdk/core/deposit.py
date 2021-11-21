@@ -35,6 +35,10 @@ class Deposit(JSONSerializable):
             amount=Coins.from_proto(proto.amount),
         )
 
+    @classmethod
+    def from_proto_bytes(cls, data: bytes) -> Deposit:
+        return cls.from_proto(Deposit_pb.FromString(data))
+
     def to_proto(self) -> Deposit_pb:
         return Deposit_pb(
             proposal_id=self.proposal_id,

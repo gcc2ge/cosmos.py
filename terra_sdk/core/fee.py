@@ -29,10 +29,7 @@ class Fee(JSONSerializable):
     granter: Optional[AccAddress] = attr.ib(default=None)
 
     def to_amino(self) -> dict:
-        return {
-            "gas": str(self.gas_limit),
-            "amount": self.amount.to_amino()
-        }
+        return {"gas": str(self.gas_limit), "amount": self.amount.to_amino()}
 
     @classmethod
     def from_data(cls, data: dict) -> Fee:
@@ -67,6 +64,10 @@ class Fee(JSONSerializable):
             payer=AccAddress(proto.payer),
             granter=AccAddress(proto.granter),
         )
+
+    @classmethod
+    def from_proto_bytes(cls, data: bytes) -> Fee:
+        return cls.from_proto(Fee_pb.FromString(data))
 
     @property
     def gas_prices(self) -> Coins:

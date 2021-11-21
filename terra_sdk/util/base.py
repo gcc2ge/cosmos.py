@@ -1,10 +1,13 @@
 """Some useful base classes to inherit from."""
 from abc import abstractmethod
-from typing import Any, Callable, Dict, List, Type
+from typing import Any, Callable, Dict, List, Type, TypeVar
 
 from betterproto import Message
+from betterproto.lib.google.protobuf import Any as Any_pb
 
 from .json import JSONSerializable, dict_to_data
+
+_BaseTerraDataT = TypeVar("_BaseTerraDataT", bound="BaseTerraData")
 
 
 class BaseTerraData(JSONSerializable, Message):
@@ -25,6 +28,11 @@ class BaseTerraData(JSONSerializable, Message):
     def from_proto(data: Message) -> "BaseTerraData":
         ...
 
+    @classmethod
+    @abstractmethod
+    def from_proto_bytes(cls: Type[_BaseTerraDataT], data: bytes) -> _BaseTerraDataT:
+        ...
+
     @abstractmethod
     def to_proto(self) -> Message:
         ...
@@ -41,8 +49,11 @@ def create_demux(inputs: List[Type[BaseTerraData]]) -> Callable[[Dict[str, Any]]
 
 def create_demux_proto(inputs: List[type[BaseTerraData]]) -> Callable[[Message], Any]:
     table = {i.type_url: i.from_proto for i in inputs}
+    table_bytes = {i.type_url: i.from_proto_bytes for i in inputs}
 
     def from_proto(data: Message) -> BaseTerraData:
-        return table[data["@type"]](data)
+        if isinstance(data, Any_pb):
+            return table_bytes[data.type_url](data.value)
+        return table[data.type_url](data)
 
     return from_proto

@@ -100,6 +100,10 @@ class Tx(JSONSerializable):
             proto.signatures,
         )
 
+    @classmethod
+    def from_proto_bytes(cls, data: bytes) -> Tx:
+        return cls.from_proto(Tx_pb.FromString(data))
+
     def append_empty_signatures(self, signers: List[SignerData]):
         for signer in signers:
             if signer.public_key is not None:
@@ -177,6 +181,10 @@ class TxBody(JSONSerializable):
             proto.timeout_height,
         )
 
+    @classmethod
+    def from_proto_bytes(cls, data: bytes) -> TxBody:
+        return cls.from_proto(TxBody_pb.FromString(data))
+
 
 @attr.s
 class AuthInfo(JSONSerializable):
@@ -217,6 +225,10 @@ class AuthInfo(JSONSerializable):
             signer_infos=[SignerInfo.from_proto(m) for m in proto.signer_infos],
             fee=Fee.from_proto(proto.fee),
         )
+
+    @classmethod
+    def from_proto_bytes(cls, data: bytes) -> AuthInfo:
+        return cls.from_proto(AuthInfo_pb.FromString(data))
 
 
 @attr.s
@@ -262,6 +274,10 @@ class SignerInfo(JSONSerializable):
             sequence=proto.sequence,
         )
 
+    @classmethod
+    def from_proto_bytes(cls, data: bytes) -> SignerInfo:
+        return cls.from_proto(SignerInfo_pb.FromString(data))
+
 
 @attr.s
 class ModeInfo(JSONSerializable):
@@ -296,6 +312,10 @@ class ModeInfo(JSONSerializable):
             ModeInfoMulti.from_proto(proto.multi),
         )
 
+    @classmethod
+    def from_proto_bytes(cls, data: bytes) -> ModeInfo:
+        return cls.from_proto(ModeInfo_pb.FromString(data))
+
 
 @attr.s
 class ModeInfoSingle(JSONSerializable):
@@ -314,6 +334,10 @@ class ModeInfoSingle(JSONSerializable):
     @classmethod
     def from_proto(cls, proto: ModeInfoSingle_pb) -> ModeInfoSingle:
         return cls(mode=proto.mode)
+
+    @classmethod
+    def from_proto_bytes(cls, data: bytes) -> ModeInfoSingle:
+        return cls.from_proto(ModeInfoSingle_pb.FromString(data))
 
 
 @attr.s
@@ -338,6 +362,10 @@ class ModeInfoMulti(JSONSerializable):
             [ModeInfo.from_proto(i) for i in proto.mode_infos],
         )
 
+    @classmethod
+    def from_proto_bytes(cls, data: bytes) -> ModeInfoMulti:
+        return cls.from_proto(ModeInfoMulti_pb.FromString(data))
+
 
 @attr.s
 class CompactBitArray(JSONSerializable):
@@ -351,6 +379,10 @@ class CompactBitArray(JSONSerializable):
     @classmethod
     def from_proto(cls, proto: CompactBitArray_pb) -> CompactBitArray:
         return cls(proto.extra_bits_stored, proto.elems)
+
+    @classmethod
+    def from_proto_bytes(cls, data: bytes) -> CompactBitArray:
+        return cls.from_proto(CompactBitArray_pb.FromString(data))
 
     def to_proto(self) -> CompactBitArray_pb:
         return CompactBitArray_pb(
@@ -451,6 +483,10 @@ class TxLog(JSONSerializable):
             events=[event.to_dict() for event in proto.events],
         )
 
+    @classmethod
+    def from_proto_bytes(cls, data: bytes) -> TxLog:
+        return cls.from_proto(AbciMessageLog_pb.FromString(data))
+
     def to_proto(self) -> AbciMessageLog_pb:
         return AbciMessageLog_pb(
             msg_index=self.msg_index,
@@ -474,6 +510,10 @@ class Attribute(JSONSerializable):
     def from_proto(cls, attrib: Attribute_pb) -> Attribute:
         return cls(key=attrib["key"], value=attrib["value"])
 
+    @classmethod
+    def from_proto_bytes(cls, data: bytes) -> Attribute:
+        return cls.from_proto(Attribute_pb.FromString(data))
+
 
 @attr.s
 class StringEvent(JSONSerializable):
@@ -493,6 +533,10 @@ class StringEvent(JSONSerializable):
             proto.type,
             [{"key": a.key, "value": a.value} for a in proto.attributes],
         )
+
+    @classmethod
+    def from_proto_bytes(cls, data: bytes) -> StringEvent:
+        return cls.from_proto(StringEvent_pb.FromString(data))
 
 
 def parse_tx_logs(logs) -> Optional[List[TxLog]]:
@@ -620,3 +664,7 @@ class TxInfo(JSONSerializable):
             code=proto.code,
             codespace=proto.codespace,
         )
+
+    @classmethod
+    def from_proto_bytes(cls, data: bytes) -> TxInfo:
+        return cls.from_proto(TxResponse_pb.FromString(data))

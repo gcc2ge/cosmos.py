@@ -60,6 +60,10 @@ class SignDoc(JSONSerializable):
             tx_body=TxBody.from_proto(proto.body_bytes),
         )
 
+    @classmethod
+    def from_proto_bytes(cls, data: bytes) -> SignDoc:
+        return cls.from_proto(SignDoc_pb.FromString(data))
+
     def to_proto(self) -> SignDoc_pb:
         return SignDoc_pb(
             body_bytes=bytes(self.tx_body.to_proto()),
