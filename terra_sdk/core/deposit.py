@@ -31,7 +31,7 @@ class Deposit(JSONSerializable):
     def from_proto(cls, proto: Deposit_pb) -> Deposit:
         return cls(
             proposal_id=proto.proposal_id,
-            depositor=proto.depositor,
+            depositor=AccAddress(proto.depositor),
             amount=Coins.from_proto(proto.amount),
         )
 

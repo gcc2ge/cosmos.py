@@ -72,7 +72,7 @@ class BaseAccount(JSONSerializable):
     @classmethod
     def from_proto(cls, proto: BaseAccount_pb) -> BaseAccount:
         return cls(
-            address=proto.address,
+            address=AccAddress(proto.address),
             public_key=PublicKey.from_proto(proto.pub_key),
             account_number=proto.account_number,
             sequence=proto.sequence,

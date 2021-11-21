@@ -70,7 +70,7 @@ class Coin(JSONSerializable):
 
     @classmethod
     def from_proto(cls, proto: Coin_pb) -> Coin:
-        return cls(proto.denom, proto.amount)
+        return cls(proto.denom, proto.amount)  # type: ignore
 
     def to_proto(self) -> Coin_pb:
         coin = Coin_pb()

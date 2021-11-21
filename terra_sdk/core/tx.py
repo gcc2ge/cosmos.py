@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+import json
 import math
 from typing import Dict, List, Optional
 
@@ -76,13 +77,6 @@ class Tx(JSONSerializable):
             "signatures": [base64.b64encode(sig).decode() for sig in self.signatures],
         }
 
-    def to_proto(self) -> Tx_pb:
-        proto = Tx_pb()
-        proto.body = self.body.to_proto()
-        proto.auth_info = self.auth_info.to_proto()
-        proto.signatures = [sig for sig in self.signatures]
-        return proto
-
     @classmethod
     def from_data(cls, data: dict) -> Tx:
         return cls(
@@ -91,12 +85,19 @@ class Tx(JSONSerializable):
             data["signatures"],
         )
 
+    def to_proto(self) -> Tx_pb:
+        return Tx_pb(
+            self.body.to_proto(),
+            self.auth_info.to_proto(),
+            self.signatures,
+        )
+
     @classmethod
     def from_proto(cls, proto: Tx_pb) -> Tx:
         return cls(
-            TxBody.from_proto(proto["body"]),
-            AuthInfo.from_proto(proto["auth_info"]),
-            proto["signatures"],
+            TxBody.from_proto(proto.body),
+            AuthInfo.from_proto(proto.auth_info),
+            proto.signatures,
         )
 
     def append_empty_signatures(self, signers: List[SignerData]):
@@ -171,9 +172,9 @@ class TxBody(JSONSerializable):
     @classmethod
     def from_proto(cls, proto: TxBody_pb) -> TxBody:
         return cls(
-            [Msg.unpack_any(m) for m in proto["messages"]],
-            proto["memo"],
-            proto["timeout_height"],
+            [Msg.from_proto(m) for m in proto.messages],
+            proto.memo,
+            proto.timeout_height,
         )
 
 
@@ -211,10 +212,10 @@ class AuthInfo(JSONSerializable):
         )
 
     @classmethod
-    def from_proto(cls, proto: TxBody_pb) -> TxBody:
+    def from_proto(cls, proto: AuthInfo_pb) -> AuthInfo:
         return cls(
-            [SignerInfo.from_proto(m) for m in proto["signer_infos"]],
-            Fee.from_proto(proto["fee"]),
+            signer_infos=[SignerInfo.from_proto(m) for m in proto.signer_infos],
+            fee=Fee.from_proto(proto.fee),
         )
 
 
@@ -256,9 +257,9 @@ class SignerInfo(JSONSerializable):
     @classmethod
     def from_proto(cls, proto: SignerInfo_pb) -> SignerInfo:
         return cls(
-            public_key=PublicKey.from_proto(proto["public_key"]),
-            mode_info=ModeInfo.from_proto(proto["mode_info"]),
-            sequence=proto["sequence"],
+            public_key=PublicKey.from_proto(proto.public_key),
+            mode_info=ModeInfo.from_proto(proto.mode_info),
+            sequence=proto.sequence,
         )
 
 
@@ -271,30 +272,29 @@ class ModeInfo(JSONSerializable):
     def to_data(self) -> dict:
         return {
             "single": self.single.to_data() if self.single else None,
-            "multi": self.multi.todata() if self.multi else None,
+            "multi": self.multi.to_data() if self.multi else None,
         }
 
     @classmethod
     def from_data(cls, data: dict) -> ModeInfo:
         return cls(
-            ModeInfoSingle.from_data(data.get("single"))
-            if data.get("single")
-            else None,
-            ModeInfoMulti.from_data(data.get("multi")) if data.get("multi") else None,
+            ModeInfoSingle.from_data(data["single"]) if "single" in data else None,
+            ModeInfoMulti.from_data(data["multi"]) if "multi" in data else None,
         )
 
     def to_proto(self) -> ModeInfo_pb:
         if self.single:
             return ModeInfo_pb(single=self.single.to_proto())
-        else:
+        elif self.multi:
             return ModeInfo_pb(multi=self.multi.to_proto())
+        raise Exception("Either single or multi must be set")
 
     @classmethod
     def from_proto(cls, proto: ModeInfo_pb) -> ModeInfo:
-        if proto["single"]:
-            return ModeInfoSingle.from_proto(proto["single"])
-        else:
-            return ModeInfoMulti.from_proto(proto["multi"])
+        return ModeInfo(
+            ModeInfoSingle.from_proto(proto.single),
+            ModeInfoMulti.from_proto(proto.multi),
+        )
 
 
 @attr.s
@@ -302,19 +302,18 @@ class ModeInfoSingle(JSONSerializable):
     mode: SignMode = attr.ib()
 
     def to_data(self) -> dict:
-        {"mode": self.mode}
+        return {"mode": self.mode}
 
     @classmethod
     def from_data(cls, data: dict) -> ModeInfoSingle:
         return cls(data["mode"])
 
-    def to_proto(self) -> Any_pb:
+    def to_proto(self) -> ModeInfoSingle_pb:
         return ModeInfoSingle_pb(mode=self.mode)
 
     @classmethod
     def from_proto(cls, proto: ModeInfoSingle_pb) -> ModeInfoSingle:
-        mode = SignMode.from_string(proto["mode"])
-        return cls(mode=mode)
+        return cls(mode=proto.mode)
 
 
 @attr.s
@@ -335,8 +334,8 @@ class ModeInfoMulti(JSONSerializable):
     @classmethod
     def from_proto(cls, proto: ModeInfoMulti_pb) -> ModeInfoMulti:
         return cls(
-            CompactBitArray.from_proto(proto["bitarray"]),
-            ModeInfo_pb.from_proto(proto["mode_infos"]),
+            CompactBitArray.from_proto(proto.bitarray),
+            [ModeInfo.from_proto(i) for i in proto.mode_infos],
         )
 
 
@@ -351,7 +350,7 @@ class CompactBitArray(JSONSerializable):
 
     @classmethod
     def from_proto(cls, proto: CompactBitArray_pb) -> CompactBitArray:
-        return cls(proto["extra_bits_stored"], proto["elems"])
+        return cls(proto.extra_bits_stored, proto.elems)
 
     def to_proto(self) -> CompactBitArray_pb:
         return CompactBitArray_pb(
@@ -445,9 +444,19 @@ class TxLog(JSONSerializable):
         self.events_by_type = parse_events_by_type(self.events)
 
     @classmethod
-    def from_proto(cls, tx_log: AbciMessageLog_pb) -> TxLog:
-        events = [event for event in tx_log["events"]]
-        return cls(msg_index=tx_log["msg_index"], log=tx_log["log"], events=events)
+    def from_proto(cls, proto: AbciMessageLog_pb) -> TxLog:
+        return cls(
+            msg_index=proto.msg_index,
+            log=proto.log,
+            events=[event.to_dict() for event in proto.events],
+        )
+
+    def to_proto(self) -> AbciMessageLog_pb:
+        return AbciMessageLog_pb(
+            msg_index=self.msg_index,
+            log=self.log,
+            events=[StringEvent_pb(**e) for e in self.events],
+        )
 
 
 @attr.s
@@ -470,14 +479,20 @@ class Attribute(JSONSerializable):
 class StringEvent(JSONSerializable):
 
     type: str = attr.ib()
-    attributes = attr.ib()
+    attributes: List[dict] = attr.ib()
 
     def to_proto(self) -> StringEvent_pb:
-        return StringEvent_pb(type=self.type, attributes=self.attributes)
+        return StringEvent_pb(
+            self.type,
+            [Attribute_pb(a["key"], a["value"]) for a in self.attributes],
+        )
 
     @classmethod
-    def from_proto(cls, str_event: StringEvent_pb) -> StringEvent:
-        return cls(type=str_event["type"], attributes=str_event["attributes"])
+    def from_proto(cls, proto: StringEvent_pb) -> StringEvent:
+        return cls(
+            proto.type,
+            [{"key": a.key, "value": a.value} for a in proto.attributes],
+        )
 
 
 def parse_tx_logs(logs) -> Optional[List[TxLog]]:
@@ -578,30 +593,30 @@ class TxInfo(JSONSerializable):
         )
 
     def to_proto(self) -> TxResponse_pb:
-        proto = TxResponse_pb()
-        proto.height = self.height
-        proto.txhash = self.txhash
-        proto.raw_log = self.rawlog
-        proto.logs = [log.to_proto() for log in self.logs] if self.logs else None
-        proto.gas_wanted = self.gas_wanted
-        proto.gas_used = self.gas_used
-        proto.timestamp = self.timestamp
-        proto.tx = self.tx.to_proto()
-        proto.code = self.code
-        proto.codespace = self.codespace
-        return proto
+        return TxResponse_pb(
+            height=self.height,
+            txhash=self.txhash,
+            raw_log=self.rawlog,
+            logs=[log.to_proto() for log in self.logs] if self.logs else [],
+            gas_wanted=self.gas_wanted,
+            gas_used=self.gas_used,
+            timestamp=self.timestamp,
+            tx=self.tx.to_proto(),
+            code=self.code or 0,
+            codespace=self.codespace or "",
+        )
 
     @classmethod
     def from_proto(cls, proto: TxResponse_pb) -> TxInfo:
         return cls(
-            height=proto["height"],
-            txhash=proto["txhash"],
-            rawlog=proto["raw_log"],
-            logs=parse_tx_logs_proto(proto["logs"]),
-            gas_wanted=proto["gas_wanted"],
-            gas_used=proto["gas_used"],
-            timestamp=proto["timestamp"],
-            tx=Tx.from_proto(proto["tx"]),
-            code=proto["code"],
-            codespace=proto["codespace"],
+            height=proto.height,
+            txhash=proto.txhash,
+            rawlog=proto.raw_log,
+            logs=parse_tx_logs_proto(proto.logs),
+            gas_wanted=proto.gas_wanted,
+            gas_used=proto.gas_used,
+            timestamp=proto.timestamp,
+            tx=Tx.from_proto(proto.tx),
+            code=proto.code,
+            codespace=proto.codespace,
         )

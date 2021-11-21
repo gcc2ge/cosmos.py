@@ -235,6 +235,15 @@ class MsgExecuteContract(Msg):
             coins=self.coins.to_proto(),
         )
 
+    @classmethod
+    def from_proto(cls, proto: MsgExecuteContract_pb) -> MsgExecuteContract:
+        return MsgExecuteContract(
+            sender=AccAddress(proto.sender),
+            contract=AccAddress(proto.contract),
+            execute_msg=json.loads(proto.execute_msg),
+            coins=Coins.from_proto(proto.coins),
+        )
+
 
 @attr.s
 class MsgMigrateContract(Msg):
