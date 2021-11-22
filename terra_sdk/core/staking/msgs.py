@@ -247,8 +247,8 @@ class MsgEditValidator(Msg):
         return cls(
             description=Description.from_proto(proto.description),
             validator_address=ValAddress(proto.validator_address),
-            commission_rate=Dec(proto.commission_rate),
-            min_self_delegation=int(proto.min_self_delegation),
+            commission_rate=Dec(proto.commission_rate or "0"),
+            min_self_delegation=int(proto.min_self_delegation or "0"),
         )
 
     def to_proto(self) -> MsgEditValidator_pb:
