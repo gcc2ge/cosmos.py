@@ -76,32 +76,18 @@ wasm_msgs = [
     MsgClearContractAdmin,
 ]
 
-parse_msg = create_demux(
-    [
-        *bank_msgs,
-        *distribution_msgs,
-        *gov_msgs,
-        *ibc_msgs,
-        *market_msgs,
-        *authz_msgs,
-        *oracle_msgs,
-        *slashing_msgs,
-        *staking_msgs,
-        *wasm_msgs,
-    ]
-)
+msgs = [
+    *bank_msgs,
+    *distribution_msgs,
+    *gov_msgs,
+    *ibc_msgs,
+    *market_msgs,
+    *authz_msgs,
+    *oracle_msgs,
+    *slashing_msgs,
+    *staking_msgs,
+    *wasm_msgs,
+]
 
-parse_proto = create_demux_proto(
-    [
-        *bank_msgs,
-        *distribution_msgs,
-        *gov_msgs,
-        *ibc_msgs,
-        *market_msgs,
-        *authz_msgs,
-        *oracle_msgs,
-        *slashing_msgs,
-        *staking_msgs,
-        *wasm_msgs,
-    ]
-)
+parse_msg = create_demux(msgs)
+parse_proto = create_demux_proto(msgs)
