@@ -1,8 +1,8 @@
-from terra_sdk.client.lcd import LCDClient
-from terra_sdk.client.lcd.params import PaginationOptions
-from terra_sdk.core import Coin, Coins
-from terra_sdk.core.bank import MsgSend
-from terra_sdk.util.contract import get_code_id
+from cosmos_sdk.client.lcd import LCDClient
+from cosmos_sdk.client.lcd.params import PaginationOptions
+from cosmos_sdk.core import Coin, Coins
+from cosmos_sdk.core.bank import MsgSend
+from cosmos_sdk.util.contract import get_code_id
 
 
 def main():

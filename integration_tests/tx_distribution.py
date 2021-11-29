@@ -1,7 +1,7 @@
-from terra_sdk.client.lcd.api.tx import CreateTxOptions
-from terra_sdk.client.localterra import LocalTerra
-from terra_sdk.core import Coin, Coins
-from terra_sdk.core.distribution import (
+from cosmos_sdk.client.lcd.api.tx import CreateTxOptions
+from cosmos_sdk.client.localterra import LocalTerra
+from cosmos_sdk.core import Coin, Coins
+from cosmos_sdk.core.distribution import (
     MsgFundCommunityPool,
     MsgSetWithdrawAddress,
     MsgWithdrawDelegationReward,

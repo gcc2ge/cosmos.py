@@ -1,6 +1,6 @@
-from terra_sdk.core.auth import StdFee, StdSignMsg
-from terra_sdk.core.bank import MsgSend
-from terra_sdk.key.mnemonic import MnemonicKey
+from cosmos_sdk.core.auth import StdFee, StdSignMsg
+from cosmos_sdk.core.bank import MsgSend
+from cosmos_sdk.key.mnemonic import MnemonicKey
 
 
 def test_derivation():

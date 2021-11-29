@@ -1,5 +1,5 @@
-from terra_sdk.client.lcd import LCDClient, PaginationOptions
-from terra_sdk.core import Coin, Coins
+from cosmos_sdk.client.lcd import LCDClient, PaginationOptions
+from cosmos_sdk.core import Coin, Coins
 
 
 def main():

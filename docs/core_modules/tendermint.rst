@@ -4,5 +4,5 @@ Tendermint
 API
 ---
 
-.. autoclass:: terra_sdk.client.lcd.api.tendermint.TendermintAPI
+.. autoclass:: cosmos_sdk.client.lcd.api.tendermint.TendermintAPI
     :members: 

@@ -1,9 +1,9 @@
-from terra_sdk.client.lcd import LCDClient
-from terra_sdk.client.lcd.api.tx import CreateTxOptions
-from terra_sdk.client.localterra import LocalTerra
-from terra_sdk.core.market import MsgSwap, MsgSwapSend
-from terra_sdk.core.tx import SignMode
-from terra_sdk.util.json import JSONSerializable
+from cosmos_sdk.client.lcd import LCDClient
+from cosmos_sdk.client.lcd.api.tx import CreateTxOptions
+from cosmos_sdk.client.localterra import LocalTerra
+from cosmos_sdk.core.market import MsgSwap, MsgSwapSend
+from cosmos_sdk.core.tx import SignMode
+from cosmos_sdk.util.json import JSONSerializable
 
 """ untested
 import lcd_gov
@@ -11,8 +11,8 @@ import lcd_gov
 
 ########
 
-from terra_sdk.core import Coin, Coins
-from terra_sdk.core.public_key import SimplePublicKey
+from cosmos_sdk.core import Coin, Coins
+from cosmos_sdk.core.public_key import SimplePublicKey
 
 
 def main():

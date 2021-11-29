@@ -1,4 +1,4 @@
-- terra_sdk version:
+- cosmos_sdk version:
 - Python version:
 - Operating System:
 

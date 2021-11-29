@@ -2,12 +2,12 @@ import asyncio
 import base64
 from pathlib import Path
 
-from terra_sdk.client.lcd.api.tx import CreateTxOptions
-from terra_sdk.client.localterra import LocalTerra
-from terra_sdk.core import Coins
-from terra_sdk.core.fee import Fee
-from terra_sdk.core.wasm import MsgExecuteContract, MsgInstantiateContract, MsgStoreCode
-from terra_sdk.util.contract import get_code_id, get_contract_address, read_file_as_b64
+from cosmos_sdk.client.lcd.api.tx import CreateTxOptions
+from cosmos_sdk.client.localterra import LocalTerra
+from cosmos_sdk.core import Coins
+from cosmos_sdk.core.fee import Fee
+from cosmos_sdk.core.wasm import MsgExecuteContract, MsgInstantiateContract, MsgStoreCode
+from cosmos_sdk.util.contract import get_code_id, get_contract_address, read_file_as_b64
 
 
 def main():

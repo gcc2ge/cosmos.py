@@ -1,4 +1,4 @@
-from terra_sdk.core.slashing import MsgUnjail
+from cosmos_sdk.core.slashing import MsgUnjail
 
 
 def test_deserializes_msg_unjail_examples(load_msg_examples):

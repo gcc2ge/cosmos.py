@@ -3,7 +3,7 @@ from unittest import mock
 import asynctest
 from aioresponses import aioresponses
 
-from terra_sdk.client.lcd import LCDClient
+from cosmos_sdk.client.lcd import LCDClient
 
 
 class TestDoSessionGet(asynctest.TestCase):

@@ -1,7 +1,7 @@
 # TODO: Replace with new account information
 
 
-from terra_sdk.core.auth import Account, LazyGradedVestingAccount
+from cosmos_sdk.core.auth import Account, LazyGradedVestingAccount
 
 # def test_deserializes_account_example(load_json_examples):
 #     examples = load_json_examples("./Account.data.json")

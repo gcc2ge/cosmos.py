@@ -1,4 +1,4 @@
-from terra_sdk.client.lcd import LCDClient, PaginationOptions
+from cosmos_sdk.client.lcd import LCDClient, PaginationOptions
 
 
 def main():

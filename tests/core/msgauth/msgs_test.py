@@ -1,4 +1,4 @@
-from terra_sdk.core.authz import (
+from cosmos_sdk.core.authz import (
     MsgExecAuthorized,
     MsgGrantAuthorization,
     MsgRevokeAuthorization,
