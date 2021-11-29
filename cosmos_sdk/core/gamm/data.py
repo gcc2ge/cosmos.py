@@ -15,15 +15,15 @@ class SwapAmountInRoute:
 
     def to_data(self) -> dict:
         return {
-            "denom": self.token_out_denom,
-            "poolId": self.pool_id,
+            "tokenOutDenom": self.token_out_denom,
+            "poolId": str(self.pool_id),
         }
 
     @classmethod
     def from_data(cls, data: dict) -> SwapAmountInRoute:
         return cls(
-            token_out_denom=data["denom"],
-            pool_id=data["poolId"],
+            token_out_denom=data["tokenOutDenom"],
+            pool_id=int(data["poolId"]),
         )
 
     def to_proto(self) -> SwapAmountInRoute_pb:
@@ -44,15 +44,15 @@ class SwapAmountOutRoute:
 
     def to_data(self) -> dict:
         return {
-            "denom": self.token_in_denom,
-            "poolId": self.pool_id,
+            "tokenInDenom": self.token_in_denom,
+            "poolId": str(self.pool_id),
         }
 
     @classmethod
     def from_data(cls, data: dict) -> SwapAmountOutRoute:
         return cls(
-            token_in_denom=data["denom"],
-            pool_id=data["poolId"],
+            token_in_denom=data["tokenInDenom"],
+            pool_id=int(data["poolId"]),
         )
 
     def to_proto(self) -> SwapAmountOutRoute_pb:
