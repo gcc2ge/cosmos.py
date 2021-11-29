@@ -1,3 +1,3 @@
-from .msgs import MsgSwapExactAmountIn
+from .msgs import MsgSwapExactAmountIn, MsgSwapExactAmountOut
 
-__all__ = ["MsgSwapExactAmountIn"]
+__all__ = ["MsgSwapExactAmountIn", "MsgSwapExactAmountOut"]
