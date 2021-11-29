@@ -10,6 +10,7 @@ from cosmos_sdk.core.distribution import (
     MsgWithdrawDelegationReward,
     MsgWithdrawValidatorCommission,
 )
+from cosmos_sdk.core.gamm.msgs import MsgSwapExactAmountIn
 from cosmos_sdk.core.gov.msgs import MsgDeposit, MsgSubmitProposal, MsgVote
 from cosmos_sdk.core.ibc.msgs import MsgTransfer
 from cosmos_sdk.core.market import MsgSwap, MsgSwapSend
@@ -45,6 +46,7 @@ distribution_msgs = [
     MsgWithdrawDelegationReward,
     MsgWithdrawValidatorCommission,
 ]
+gamm_msgs = [MsgSwapExactAmountIn]
 gov_msgs = [MsgDeposit, MsgSubmitProposal, MsgVote]
 ibc_msgs = [MsgTransfer]
 market_msgs = [MsgSwap, MsgSwapSend]
@@ -79,6 +81,7 @@ wasm_msgs = [
 msgs = [
     *bank_msgs,
     *distribution_msgs,
+    *gamm_msgs,
     *gov_msgs,
     *ibc_msgs,
     *market_msgs,
