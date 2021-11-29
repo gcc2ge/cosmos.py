@@ -4,42 +4,13 @@ from __future__ import annotations
 import attr
 from cosmos_proto.osmosis.gamm.v1beta1 import MsgSwapExactAmountIn as MsgSwapExactAmountIn_pb
 from cosmos_proto.osmosis.gamm.v1beta1 import MsgSwapExactAmountOut as MsgSwapExactAmountOut_pb
-from cosmos_proto.osmosis.gamm.v1beta1 import SwapAmountInRoute as SwapAmountInRoute_pb
-from cosmos_proto.osmosis.gamm.v1beta1 import SwapAmountOutRoute as SwapAmountOutRoute_pb
 
 from cosmos_sdk.core import AccAddress, Coin
 from cosmos_sdk.core.msg import Msg
 
+from .data import SwapAmountInRoute, SwapAmountOutRoute
+
 __all__ = ["MsgSwapExactAmountIn", "MsgSwapExactAmountOut"]
-
-
-@attr.s
-class SwapAmountInRoute:
-    pool_id: int = attr.ib()
-    token_out_denom: str = attr.ib()
-
-    def to_data(self) -> dict:
-        return {
-            "denom": self.token_out_denom,
-            "poolId": self.pool_id,
-        }
-
-    @classmethod
-    def from_data(cls, data: dict) -> SwapAmountInRoute:
-        return cls(
-            token_out_denom=data["denom"],
-            pool_id=data["poolId"],
-        )
-
-    def to_proto(self) -> SwapAmountInRoute_pb:
-        return SwapAmountInRoute_pb(pool_id=self.pool_id, token_out_denom=self.token_out_denom)
-
-    @classmethod
-    def from_proto(cls, proto: SwapAmountInRoute_pb) -> SwapAmountInRoute:
-        return cls(
-            token_out_denom=proto.token_out_denom,
-            pool_id=proto.pool_id,
-        )
 
 
 @attr.s
@@ -91,35 +62,6 @@ class MsgSwapExactAmountIn(Msg):
             routes=[r.to_proto() for r in self.routes],
             token_in=self.token_in.to_proto(),
             token_out_min_amount=str(self.token_out_min_amount),
-        )
-
-
-@attr.s
-class SwapAmountOutRoute:
-    pool_id: int = attr.ib()
-    token_in_denom: str = attr.ib()
-
-    def to_data(self) -> dict:
-        return {
-            "denom": self.token_in_denom,
-            "poolId": self.pool_id,
-        }
-
-    @classmethod
-    def from_data(cls, data: dict) -> SwapAmountOutRoute:
-        return cls(
-            token_in_denom=data["denom"],
-            pool_id=data["poolId"],
-        )
-
-    def to_proto(self) -> SwapAmountOutRoute_pb:
-        return SwapAmountOutRoute_pb(pool_id=self.pool_id, token_in_denom=self.token_in_denom)
-
-    @classmethod
-    def from_proto(cls, proto: SwapAmountOutRoute_pb) -> SwapAmountOutRoute:
-        return cls(
-            token_in_denom=proto.token_in_denom,
-            pool_id=proto.pool_id,
         )
 
 
