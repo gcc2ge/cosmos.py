@@ -24,8 +24,8 @@ class MsgSwapExactAmountIn(Msg):
 
     sender: AccAddress = attr.ib()
     routes: list[SwapAmountInRoute] = attr.ib()
-    token_in: Coin = attr.ib()
-    token_out_min_amount: int = attr.ib(default=0)
+    tokenIn: Coin = attr.ib()
+    tokenOutMinAmount: int = attr.ib(default=0)
 
     def to_amino(self) -> dict:
         return {
@@ -33,8 +33,8 @@ class MsgSwapExactAmountIn(Msg):
             "value": {
                 "sender": self.sender,
                 "routes": [r.to_data() for r in self.routes],
-                "tokenIn": self.token_in.to_data(),
-                "tokenOutMinAmount": str(self.token_out_min_amount),
+                "tokenIn": self.tokenIn.to_data(),
+                "tokenOutMinAmount": str(self.tokenOutMinAmount),
             },
         }
 
@@ -43,8 +43,8 @@ class MsgSwapExactAmountIn(Msg):
         return cls(
             sender=data["sender"],
             routes=[SwapAmountInRoute.from_data(r) for r in data["routes"]],
-            token_in=Coin.from_data(data["tokenIn"]),
-            token_out_min_amount=int(data["tokenOutMinAmount"]),
+            tokenIn=Coin.from_data(data["tokenIn"]),
+            tokenOutMinAmount=int(data["tokenOutMinAmount"]),
         )
 
     @classmethod
@@ -52,16 +52,16 @@ class MsgSwapExactAmountIn(Msg):
         return cls(
             sender=AccAddress(proto.sender),
             routes=[SwapAmountInRoute.from_proto(r) for r in proto.routes],
-            token_in=Coin.from_proto(proto.token_in),
-            token_out_min_amount=int(proto.token_out_min_amount),
+            tokenIn=Coin.from_proto(proto.token_in),
+            tokenOutMinAmount=int(proto.token_out_min_amount),
         )
 
     def to_proto(self) -> MsgSwapExactAmountIn_pb:
         return MsgSwapExactAmountIn_pb(
             sender=self.sender,
             routes=[r.to_proto() for r in self.routes],
-            token_in=self.token_in.to_proto(),
-            token_out_min_amount=str(self.token_out_min_amount),
+            token_in=self.tokenIn.to_proto(),
+            token_out_min_amount=str(self.tokenOutMinAmount),
         )
 
 
@@ -76,8 +76,8 @@ class MsgSwapExactAmountOut(Msg):
 
     sender: AccAddress = attr.ib()
     routes: list[SwapAmountOutRoute] = attr.ib()
-    token_out: Coin = attr.ib()
-    token_in_max_amount: int = attr.ib(default=0)
+    tokenOut: Coin = attr.ib()
+    tokenInMaxAmount: int = attr.ib(default=0)
 
     def to_amino(self) -> dict:
         return {
@@ -85,8 +85,8 @@ class MsgSwapExactAmountOut(Msg):
             "value": {
                 "sender": self.sender,
                 "routes": [r.to_data() for r in self.routes],
-                "tokenOut": self.token_out.to_data(),
-                "tokenInMaxAmount": str(self.token_in_max_amount),
+                "tokenOut": self.tokenOut.to_data(),
+                "tokenInMaxAmount": str(self.tokenInMaxAmount),
             },
         }
 
@@ -95,8 +95,8 @@ class MsgSwapExactAmountOut(Msg):
         return cls(
             sender=data["sender"],
             routes=[SwapAmountOutRoute.from_data(r) for r in data["routes"]],
-            token_out=Coin.from_data(data["tokenOut"]),
-            token_in_max_amount=int(data["tokenInMaxAmount"]),
+            tokenOut=Coin.from_data(data["tokenOut"]),
+            tokenInMaxAmount=int(data["tokenInMaxAmount"]),
         )
 
     @classmethod
@@ -104,14 +104,14 @@ class MsgSwapExactAmountOut(Msg):
         return cls(
             sender=AccAddress(proto.sender),
             routes=[SwapAmountOutRoute.from_proto(r) for r in proto.routes],
-            token_out=Coin.from_proto(proto.token_out),
-            token_in_max_amount=int(proto.token_in_max_amount),
+            tokenOut=Coin.from_proto(proto.token_out),
+            tokenInMaxAmount=int(proto.token_in_max_amount),
         )
 
     def to_proto(self) -> MsgSwapExactAmountOut_pb:
         return MsgSwapExactAmountOut_pb(
             sender=self.sender,
             routes=[r.to_proto() for r in self.routes],
-            token_out=self.token_out.to_proto(),
-            token_in_max_amount=str(self.token_in_max_amount),
+            token_out=self.tokenOut.to_proto(),
+            token_in_max_amount=str(self.tokenInMaxAmount),
         )
