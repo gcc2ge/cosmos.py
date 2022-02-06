@@ -13,9 +13,7 @@ from cosmos_proto.cosmos.base.abci.v1beta1 import AbciMessageLog as AbciMessageL
 from cosmos_proto.cosmos.base.abci.v1beta1 import Attribute as Attribute_pb
 from cosmos_proto.cosmos.base.abci.v1beta1 import StringEvent as StringEvent_pb
 from cosmos_proto.cosmos.base.abci.v1beta1 import TxResponse as TxResponse_pb
-from cosmos_proto.cosmos.crypto.multisig.v1beta1 import (
-    CompactBitArray as CompactBitArray_pb,
-)
+from cosmos_proto.cosmos.crypto.multisig.v1beta1 import CompactBitArray as CompactBitArray_pb
 from cosmos_proto.cosmos.tx.signing.v1beta1 import SignMode as SignMode_pb
 from cosmos_proto.cosmos.tx.v1beta1 import AuthInfo as AuthInfo_pb
 from cosmos_proto.cosmos.tx.v1beta1 import ModeInfo as ModeInfo_pb
@@ -113,9 +111,7 @@ class Tx(JSONSerializable):
                         sequence=signer.sequence,
                         mode_info=ModeInfo(
                             ModeInfoMulti(
-                                CompactBitArray.from_bits(
-                                    len(signer.public_key.public_keys)
-                                )
+                                CompactBitArray.from_bits(len(signer.public_key.public_keys))
                             )
                         ),
                     )
@@ -123,9 +119,7 @@ class Tx(JSONSerializable):
                     signer_info = SignerInfo(
                         public_key=signer.public_key,
                         sequence=signer.sequence,
-                        mode_info=ModeInfo(
-                            ModeInfoSingle(mode=SignMode.SIGN_MODE_DIRECT)
-                        ),
+                        mode_info=ModeInfo(ModeInfoSingle(mode=SignMode.SIGN_MODE_DIRECT)),
                     )
             else:
                 signer_info = SignerInfo(
@@ -385,9 +379,7 @@ class CompactBitArray(JSONSerializable):
         return cls.from_proto(CompactBitArray_pb.FromString(data))
 
     def to_proto(self) -> CompactBitArray_pb:
-        return CompactBitArray_pb(
-            extra_bits_stored=self.extra_bits_stored, elems=self.elems
-        )
+        return CompactBitArray_pb(extra_bits_stored=self.extra_bits_stored, elems=self.elems)
 
     @classmethod
     def from_bits(cls, bits: int) -> CompactBitArray:

@@ -7,14 +7,10 @@ from typing import TypeVar
 
 import attr
 from betterproto import Message
-from dateutil import parser
-from cosmos_proto.cosmos.feegrant.v1beta1 import (
-    AllowedMsgAllowance as AllowedMsgAllowance_pb,
-)
+from cosmos_proto.cosmos.feegrant.v1beta1 import AllowedMsgAllowance as AllowedMsgAllowance_pb
 from cosmos_proto.cosmos.feegrant.v1beta1 import BasicAllowance as BasicAllowance_pb
-from cosmos_proto.cosmos.feegrant.v1beta1 import (
-    PeriodicAllowance as PeriodicAllowance_pb,
-)
+from cosmos_proto.cosmos.feegrant.v1beta1 import PeriodicAllowance as PeriodicAllowance_pb
+from dateutil import parser
 
 from cosmos_sdk.core import Coins
 from cosmos_sdk.util.base import BaseTerraData
@@ -29,11 +25,13 @@ class Allowance(BaseTerraData, ABC):
     @classmethod
     def from_data(cls, data: dict) -> Allowance:
         from cosmos_sdk.util.parse_feegrant import parse_feegrant
+
         return parse_feegrant(data)
 
     @classmethod
     def from_proto(cls, data: Message) -> Allowance:
         from cosmos_sdk.util.parse_feegrant import parse_feegrant_proto
+
         return parse_feegrant_proto(data)
 
     @abstractmethod
@@ -63,8 +61,8 @@ class BasicAllowance(Allowance):
             "type": self.type_amino,
             "value": {
                 "spend_limit": self.spend_limit.to_amino(),
-                "expiration": to_isoformat(self.expiration)
-            }
+                "expiration": to_isoformat(self.expiration),
+            },
         }
 
     @classmethod
@@ -115,8 +113,8 @@ class PeriodicAllowance(Allowance):
                 "period": str(self.period),
                 "period_spend_limit": self.period_spend_limit.to_amino(),
                 "period_can_spend": self.period_can_spend.to_amino(),
-                "period_reset": to_isoformat(self.period_reset)
-            }
+                "period_reset": to_isoformat(self.period_reset),
+            },
         }
 
     @classmethod
@@ -160,8 +158,8 @@ class AllowedMsgAllowance(Allowance):
             "type": self.type_amino,
             "value": {
                 "allowance": self.allowance.to_amino(),
-                "allowed_messages": self.allowed_messages
-            }
+                "allowed_messages": self.allowed_messages,
+            },
         }
 
     @classmethod

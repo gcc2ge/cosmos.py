@@ -3,12 +3,8 @@
 from __future__ import annotations
 
 import attr
-from cosmos_proto.cosmos.feegrant.v1beta1 import (
-    MsgGrantAllowance as MsgGrantAllowance_pb,
-)
-from cosmos_proto.cosmos.feegrant.v1beta1 import (
-    MsgRevokeAllowance as MsgRevokeAllowance_pb,
-)
+from cosmos_proto.cosmos.feegrant.v1beta1 import MsgGrantAllowance as MsgGrantAllowance_pb
+from cosmos_proto.cosmos.feegrant.v1beta1 import MsgRevokeAllowance as MsgRevokeAllowance_pb
 
 from cosmos_sdk.core import AccAddress
 from cosmos_sdk.core.msg import Msg
@@ -42,8 +38,8 @@ class MsgGrantAllowance(Msg):
             "value": {
                 "granter": self.granter,
                 "grantee": self.grantee,
-                "allowance": self.allowance.to_amino()
-            }
+                "allowance": self.allowance.to_amino(),
+            },
         }
 
     @classmethod
@@ -87,10 +83,7 @@ class MsgRevokeAllowance(Msg):
     def to_amino(self) -> dict:
         return {
             "type": self.type_amino,
-            "value": {
-                "granter": self.granter,
-                "grantee": self.grantee
-            }
+            "value": {"granter": self.granter, "grantee": self.grantee},
         }
 
     @classmethod

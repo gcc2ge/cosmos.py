@@ -4,12 +4,12 @@ import copy
 from datetime import datetime
 
 import attr
-from dateutil import parser
 from cosmos_proto.cosmos.staking.v1beta1 import BondStatus
 from cosmos_proto.cosmos.staking.v1beta1 import Commission as Commission_pb
 from cosmos_proto.cosmos.staking.v1beta1 import CommissionRates as CommissionRates_pb
 from cosmos_proto.cosmos.staking.v1beta1 import Description as Description_pb
 from cosmos_proto.cosmos.staking.v1beta1 import Validator as Validator_pb
+from dateutil import parser
 
 from cosmos_sdk.core import Dec, ValAddress, ValConsPubKey
 from cosmos_sdk.util.converter import to_isoformat
@@ -35,7 +35,7 @@ class CommissionRates(JSONSerializable):
         return {
             "rate": str(self.rate),
             "max_rate": str(self.max_rate),
-            "max_change_rate": str(self.max_change_rate)
+            "max_change_rate": str(self.max_change_rate),
         }
 
     @classmethod
@@ -75,7 +75,7 @@ class Commission(JSONSerializable):
     def to_amino(self) -> dict:
         return {
             "commission_rates": self.commission_rates.to_amino(),
-            "update_time": to_isoformat(self.update_time)
+            "update_time": to_isoformat(self.update_time),
         }
 
     @classmethod
@@ -119,7 +119,7 @@ class Description(JSONSerializable):
             "identity": self.identity,
             "website": self.website,
             "details": self.details,
-            "security_contact": self.security_contact
+            "security_contact": self.security_contact,
         }
 
     @classmethod
@@ -201,7 +201,7 @@ class Validator(JSONSerializable):
             "unbonding_height": str(self.unbonding_height),
             "unbonding_time": to_isoformat(self.unbonding_time),
             "commission": self.commission.to_amino(),
-            "min_self_delegation": str(self.min_self_delegation)
+            "min_self_delegation": str(self.min_self_delegation),
         }
 
     def to_data(self) -> dict:

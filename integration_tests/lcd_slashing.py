@@ -14,9 +14,7 @@ def main():
 
     result = terra.slashing.signing_infos(pagopt)
     print(result)
-    result = terra.slashing.signing_info(
-        "terravalcons1lcjwqqp8sk86laggdagvk2lez0v3helfztsarh"
-    )
+    result = terra.slashing.signing_info("terravalcons1lcjwqqp8sk86laggdagvk2lez0v3helfztsarh")
     print(result)
     result = terra.slashing.parameters()
     print(result)

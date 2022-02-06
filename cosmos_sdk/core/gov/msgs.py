@@ -44,8 +44,8 @@ class MsgSubmitProposal(Msg):
             "value": {
                 "content": self.content.to_amino(),
                 "initial_deposit": self.initial_deposit.to_amino(),
-                "proposer": self.proposer
-            }
+                "proposer": self.proposer,
+            },
         }
 
     @classmethod
@@ -107,8 +107,8 @@ class MsgDeposit(Msg):
             "value": {
                 "proposal_id": str(self.proposal_id),
                 "depositor": self.depositor,
-                "amount": self.amount.to_amino()
-            }
+                "amount": self.amount.to_amino(),
+            },
         }
 
     @classmethod
@@ -193,8 +193,8 @@ class MsgVote(Msg):
             "value": {
                 "proposal_id": str(self.proposal_id),
                 "voter": self.voter,
-                "option": self.option.name
-            }
+                "option": self.option.name,
+            },
         }
 
     @classmethod
@@ -214,6 +214,4 @@ class MsgVote(Msg):
         )
 
     def to_proto(self) -> MsgVote_pb:
-        return MsgVote_pb(
-            proposal_id=self.proposal_id, voter=self.voter, option=self.option
-        )
+        return MsgVote_pb(proposal_id=self.proposal_id, voter=self.voter, option=self.option)

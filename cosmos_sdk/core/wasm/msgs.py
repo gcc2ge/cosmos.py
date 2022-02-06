@@ -8,19 +8,13 @@ import json
 from typing import Optional
 
 import attr
-from cosmos_proto.terra.wasm.v1beta1 import (
-    MsgClearContractAdmin as MsgClearContractAdmin_pb,
-)
+from cosmos_proto.terra.wasm.v1beta1 import MsgClearContractAdmin as MsgClearContractAdmin_pb
 from cosmos_proto.terra.wasm.v1beta1 import MsgExecuteContract as MsgExecuteContract_pb
-from cosmos_proto.terra.wasm.v1beta1 import (
-    MsgInstantiateContract as MsgInstantiateContract_pb,
-)
+from cosmos_proto.terra.wasm.v1beta1 import MsgInstantiateContract as MsgInstantiateContract_pb
 from cosmos_proto.terra.wasm.v1beta1 import MsgMigrateCode as MsgMigrateCode_pb
 from cosmos_proto.terra.wasm.v1beta1 import MsgMigrateContract as MsgMigrateContract_pb
 from cosmos_proto.terra.wasm.v1beta1 import MsgStoreCode as MsgStoreCode_pb
-from cosmos_proto.terra.wasm.v1beta1 import (
-    MsgUpdateContractAdmin as MsgUpdateContractAdmin_pb,
-)
+from cosmos_proto.terra.wasm.v1beta1 import MsgUpdateContractAdmin as MsgUpdateContractAdmin_pb
 
 from cosmos_sdk.core import AccAddress, Coins
 from cosmos_sdk.core.msg import Msg
@@ -108,8 +102,8 @@ class MsgMigrateCode(Msg):
             "value": {
                 "sender": self.sender,
                 "code_id": str(self.code_id),
-                "wasm_byte_code": self.wasm_byte_code
-            }
+                "wasm_byte_code": self.wasm_byte_code,
+            },
         }
 
     @classmethod
@@ -169,8 +163,8 @@ class MsgInstantiateContract(Msg):
                 "admin": self.admin if self.admin else "",
                 "code_id": str(self.code_id),
                 "init_msg": bytes(json.dumps(self.init_msg), "utf-8"),
-                "init_coins": self.init_coins.to_amino()
-            }
+                "init_coins": self.init_coins.to_amino(),
+            },
         }
 
     @classmethod
@@ -234,8 +228,8 @@ class MsgExecuteContract(Msg):
                 "sender": self.sender,
                 "contract": self.contract,
                 "execute_msg": remove_none(self.execute_msg),
-                "coins": self.coins.to_amino()
-            }
+                "coins": self.coins.to_amino(),
+            },
         }
 
     @classmethod

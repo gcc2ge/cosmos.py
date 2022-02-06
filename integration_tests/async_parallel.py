@@ -18,10 +18,7 @@ async def main():
 
     sem = asyncio.Semaphore(2)  # 2 continuous connections
     result = await asyncio.gather(
-        *[
-            with_sem(terra.oracle.misses(address), sem)
-            for address in validator_addresses
-        ]
+        *[with_sem(terra.oracle.misses(address), sem) for address in validator_addresses]
     )
 
     await terra.session.close()

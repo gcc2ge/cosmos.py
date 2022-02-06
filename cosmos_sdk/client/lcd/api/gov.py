@@ -26,9 +26,7 @@ class AsyncGovAPI(BaseAsyncAPI):
             List[Proposal]: proposals
         """
         res = await self._c._get("/cosmos/gov/v1beta1/proposals", options)
-        return [Proposal.from_data(d) for d in res.get("proposals")], res.get(
-            "pagination"
-        )
+        return [Proposal.from_data(d) for d in res.get("proposals")], res.get("pagination")
 
     async def proposal(self, proposal_id: int) -> Proposal:
         """Fetches a single proposal by id.
@@ -55,9 +53,7 @@ class AsyncGovAPI(BaseAsyncAPI):
         return txs[0]
 
     # keep it private
-    async def __search_deposits(
-        self, proposal_id: int, params: Optional[APIParams] = None
-    ):
+    async def __search_deposits(self, proposal_id: int, params: Optional[APIParams] = None):
         events = [
             ("events", f"message.action='/cosmos.gov.v1beta1.MsgDeposit'"),
             ("events", f"proposal_deposit.proposal_id={proposal_id}"),

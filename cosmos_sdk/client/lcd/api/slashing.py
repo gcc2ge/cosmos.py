@@ -13,9 +13,7 @@ from ..params import APIParams
 
 
 class AsyncSlashingAPI(BaseAsyncAPI):
-    async def signing_info(
-        self, val_cons_pub_key: ValConsPubKey
-    ) -> Union[List[dict], dict]:
+    async def signing_info(self, val_cons_pub_key: ValConsPubKey) -> Union[List[dict], dict]:
         """Fetches signing info for a validator consensus public key.
 
         Args:
@@ -24,17 +22,13 @@ class AsyncSlashingAPI(BaseAsyncAPI):
         Returns:
             Union[List[dict], dict]: signing info
         """
-        res = await self._c._get(
-            f"/cosmos/slashing/v1beta1/signing_infos/{val_cons_pub_key}"
-        )
+        res = await self._c._get(f"/cosmos/slashing/v1beta1/signing_infos/{val_cons_pub_key}")
         info = res["val_signing_info"]
         return {
             "address": info["address"],
             "start_height": Numeric.parse(info["start_height"]),
             "index_offset": Numeric.parse(info["index_offset"]),
-            "jailed_until": parser.parse(
-                info["jailed_until"]
-            ),  # TODO: convert to datetime
+            "jailed_until": parser.parse(info["jailed_until"]),  # TODO: convert to datetime
             "tombstoned": bool(info["tombstoned"]),
             "missed_blocks_counter": Numeric.parse(info["missed_blocks_counter"]),
         }
@@ -86,9 +80,7 @@ class SlashingAPI(AsyncSlashingAPI):
     signing_info.__doc__ = AsyncSlashingAPI.signing_info.__doc__
 
     @sync_bind(AsyncSlashingAPI.signing_infos)
-    def signing_infos(
-        self, params: Optional[APIParams]
-    ) -> (Union[List[dict], dict], dict):
+    def signing_infos(self, params: Optional[APIParams]) -> (Union[List[dict], dict], dict):
         pass
 
     signing_infos.__doc__ = AsyncSlashingAPI.signing_infos.__doc__

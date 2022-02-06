@@ -34,7 +34,9 @@ class BaseTerraData(JSONSerializable, Message):
         raise NotImplementedError
 
 
-def create_demux(inputs: List[Type[_BaseTerraDataT]]) -> Callable[[Dict[str, Any]], _BaseTerraDataT]:
+def create_demux(
+    inputs: List[Type[_BaseTerraDataT]],
+) -> Callable[[Dict[str, Any]], _BaseTerraDataT]:
     table = {i.type_url: i.from_data for i in inputs}
 
     def from_data(data: dict) -> BaseTerraData:
@@ -43,7 +45,9 @@ def create_demux(inputs: List[Type[_BaseTerraDataT]]) -> Callable[[Dict[str, Any
     return from_data
 
 
-def create_demux_proto(inputs: List[Type[_BaseTerraDataT]]) -> Callable[[Message], _BaseTerraDataT]:
+def create_demux_proto(
+    inputs: List[Type[_BaseTerraDataT]],
+) -> Callable[[Message], _BaseTerraDataT]:
     table = {i.type_url: i.from_proto for i in inputs}
     table_bytes = {i.type_url: i.from_proto_bytes for i in inputs}
 

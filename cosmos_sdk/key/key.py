@@ -7,14 +7,7 @@ from typing import Optional
 import attr
 from bech32 import bech32_encode, convertbits
 
-from cosmos_sdk.core import (
-    AccAddress,
-    AccPubKey,
-    SignatureV2,
-    SignDoc,
-    ValAddress,
-    ValPubKey,
-)
+from cosmos_sdk.core import AccAddress, AccPubKey, SignatureV2, SignDoc, ValAddress, ValPubKey
 from cosmos_sdk.core.public_key import PublicKey
 from cosmos_sdk.core.signature_v2 import Descriptor
 from cosmos_sdk.core.signature_v2 import Single as SingleDescriptor
@@ -153,9 +146,7 @@ class Key:
 
     def create_signature_amino(self, signDoc: SignDoc) -> SignatureV2:
         if self.public_key is None:
-            raise ValueError(
-                "signature could not be created: Key instance missing public_key"
-            )
+            raise ValueError("signature could not be created: Key instance missing public_key")
 
         return SignatureV2(
             public_key=self.public_key,
@@ -183,9 +174,7 @@ class Key:
             SignatureV2: signature object
         """
         if self.public_key is None:
-            raise ValueError(
-                "signature could not be created: Key instance missing public_key"
-            )
+            raise ValueError("signature could not be created: Key instance missing public_key")
 
         # make backup
         si_backup = copy.deepcopy(signDoc.auth_info.signer_infos)
@@ -193,9 +182,7 @@ class Key:
             SignerInfo(
                 public_key=self.public_key,
                 sequence=signDoc.sequence,
-                mode_info=ModeInfo(
-                    single=ModeInfoSingle(mode=SignMode.SIGN_MODE_DIRECT)
-                ),
+                mode_info=ModeInfo(single=ModeInfoSingle(mode=SignMode.SIGN_MODE_DIRECT)),
             )
         ]
         signature = self.sign(signDoc.to_bytes())
@@ -206,9 +193,7 @@ class Key:
         return SignatureV2(
             public_key=self.public_key,
             data=Descriptor(
-                single=SingleDescriptor(
-                    mode=SignMode.SIGN_MODE_DIRECT, signature=signature
-                )
+                single=SingleDescriptor(mode=SignMode.SIGN_MODE_DIRECT, signature=signature)
             ),
             sequence=signDoc.sequence,
         )

@@ -29,9 +29,7 @@ def read_file_as_b64(path: Union[str, bytes, int]) -> str:
         return contract_bytes
 
 
-def get_code_id(
-    tx_result: Union[BlockTxBroadcastResult, TxInfo], msg_index: int = 0
-) -> str:
+def get_code_id(tx_result: Union[BlockTxBroadcastResult, TxInfo], msg_index: int = 0) -> str:
     """Utility function for extracting the code id from a ``MsgStoreCode`` message.
 
     Args:
@@ -62,9 +60,9 @@ def get_contract_address(
         str: extracted contract address
     """
     if tx_result.logs:
-        contract_address = tx_result.logs[msg_index].events_by_type[
-            "instantiate_contract"
-        ]["contract_address"][0]
+        contract_address = tx_result.logs[msg_index].events_by_type["instantiate_contract"][
+            "contract_address"
+        ][0]
         return AccAddress(contract_address)
     else:
         raise ValueError("could not parse code id -- tx logs are empty.")

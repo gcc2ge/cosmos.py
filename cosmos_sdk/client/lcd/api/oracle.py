@@ -1,10 +1,7 @@
 from typing import List, Optional
 
 from cosmos_sdk.core import AccAddress, Coin, Coins, Dec, Numeric, ValAddress
-from cosmos_sdk.core.oracle import (
-    AggregateExchangeRatePrevote,
-    AggregateExchangeRateVote,
-)
+from cosmos_sdk.core.oracle import AggregateExchangeRatePrevote, AggregateExchangeRateVote
 from cosmos_sdk.exceptions import LCDResponseError
 
 from ._base import BaseAsyncAPI, sync_bind
@@ -127,9 +124,7 @@ class AsyncOracleAPI(BaseAsyncAPI):
             "vote_period": Numeric.parse(params["vote_period"]),
             "vote_threshold": Dec(params["vote_threshold"]),
             "reward_band": Dec(params["reward_band"]),
-            "reward_distribution_window": Numeric.parse(
-                params["reward_distribution_window"]
-            ),
+            "reward_distribution_window": Numeric.parse(params["reward_distribution_window"]),
             "whitelist": [
                 {"name": x["name"], "tobin_tax": Dec(x["tobin_tax"])}
                 for x in params["whitelist"]
@@ -180,9 +175,7 @@ class OracleAPI(AsyncOracleAPI):
     aggregate_prevote.__doc__ = AsyncOracleAPI.aggregate_prevote.__doc__
 
     @sync_bind(AsyncOracleAPI.aggregate_vote)
-    def aggregate_vote(
-        self, validator: ValAddress
-    ) -> Optional[AggregateExchangeRateVote]:
+    def aggregate_vote(self, validator: ValAddress) -> Optional[AggregateExchangeRateVote]:
         pass
 
     aggregate_vote.__doc__ = AsyncOracleAPI.aggregate_vote.__doc__

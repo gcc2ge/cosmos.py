@@ -41,8 +41,8 @@ class BaseAccount(JSONSerializable):
                 "address": self.address,
                 "public_key": self.public_key.to_amino() if self.public_key else None,
                 "account_number": self.account_number,
-                "sequence": self.sequence
-            }
+                "sequence": self.sequence,
+            },
         }
 
     def get_sequence(self) -> int:
@@ -64,7 +64,9 @@ class BaseAccount(JSONSerializable):
     def from_data(cls, data: dict) -> BaseAccount:
         return cls(
             address=data["address"],
-            public_key=PublicKey.from_data(data["public_key"]) if "public_key" in data else None,
+            public_key=PublicKey.from_data(data["public_key"])
+            if "public_key" in data
+            else None,
             account_number=data.get("account_number", 0),
             sequence=data.get("sequence", 0),
         )

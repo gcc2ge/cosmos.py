@@ -86,10 +86,7 @@ class MsgDelegateFeedConsent(Msg):
     def to_amino(self) -> dict:
         return {
             "type": self.type_amino,
-            "value": {
-                "operator": self.operator,
-                "delegate": self.delegate
-            }
+            "value": {"operator": self.operator, "delegate": self.delegate},
         }
 
     @classmethod
@@ -131,8 +128,8 @@ class MsgAggregateExchangeRatePrevote(Msg):
             "value": {
                 "hash": self.hash,
                 "feeder": self.feeder,
-                "validator": self.validator
-            }
+                "validator": self.validator,
+            },
         }
 
     @classmethod
@@ -190,8 +187,8 @@ class MsgAggregateExchangeRateVote(Msg):
                 "exchange_rates": str(self.exchange_rates.to_dec_coins()),
                 "salt": self.salt,
                 "feeder": self.feeder,
-                "validator": self.validator
-            }
+                "validator": self.validator,
+            },
         }
 
     @classmethod

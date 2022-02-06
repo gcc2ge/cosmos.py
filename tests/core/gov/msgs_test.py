@@ -8,8 +8,6 @@ def test_deserializes_msg_deposit_examples(load_msg_examples):
 
 
 def test_deserializes_msg_submit_proposal_examples(load_msg_examples):
-    examples = load_msg_examples(
-        MsgSubmitProposal.type, "./MsgSubmitProposal.data.json"
-    )
+    examples = load_msg_examples(MsgSubmitProposal.type, "./MsgSubmitProposal.data.json")
     for example in examples:
         assert MsgSubmitProposal.from_data(example).to_data() == example

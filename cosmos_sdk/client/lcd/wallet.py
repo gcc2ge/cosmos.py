@@ -30,9 +30,7 @@ class AsyncWallet:
         res = await self.lcd.auth.account_info(self.key.acc_address)
         return {"account_number": res.account_number, "sequence": res.sequence}
 
-    async def create_tx(
-        self, signers: List[SignerOptions], options: CreateTxOptions
-    ) -> Tx:
+    async def create_tx(self, signers: List[SignerOptions], options: CreateTxOptions) -> Tx:
         return await self.lcd.tx.create(signers, options)
 
     async def create_and_sign_tx(
@@ -146,8 +144,6 @@ class Wallet:
                 account_number=account_number,
                 sequence=sequence,
                 chain_id=self.lcd.chain_id,
-                sign_mode=options.sign_mode
-                if options.sign_mode
-                else SignMode.SIGN_MODE_DIRECT,
+                sign_mode=options.sign_mode if options.sign_mode else SignMode.SIGN_MODE_DIRECT,
             ),
         )

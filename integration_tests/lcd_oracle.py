@@ -16,9 +16,7 @@ def main():
     print(result)
     result = terra.oracle.active_denoms()
     print(result)
-    result = terra.oracle.feeder_address(
-        "terravaloper19ne0aqltndwxl0n32zyuglp2z8mm3nu0gxpfaw"
-    )
+    result = terra.oracle.feeder_address("terravaloper19ne0aqltndwxl0n32zyuglp2z8mm3nu0gxpfaw")
     print(result)
     result = terra.oracle.misses("terravaloper19ne0aqltndwxl0n32zyuglp2z8mm3nu0gxpfaw")
     print(result)
@@ -26,9 +24,7 @@ def main():
         "terravaloper19ne0aqltndwxl0n32zyuglp2z8mm3nu0gxpfaw"
     )
     print(result)
-    result = terra.oracle.aggregate_vote(
-        "terravaloper19ne0aqltndwxl0n32zyuglp2z8mm3nu0gxpfaw"
-    )
+    result = terra.oracle.aggregate_vote("terravaloper19ne0aqltndwxl0n32zyuglp2z8mm3nu0gxpfaw")
     print(result)
     result = terra.oracle.parameters()
     print(result)

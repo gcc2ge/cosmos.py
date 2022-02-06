@@ -9,6 +9,7 @@ from cosmos_proto.cosmos.params.v1beta1 import ParamChange as ParamChange_pb
 from cosmos_proto.cosmos.params.v1beta1 import (
     ParameterChangeProposal as ParameterChangeProposal_pb,
 )
+
 from cosmos_sdk.util.base import BaseTerraData
 
 __all__ = ["ParameterChangeProposal", "ParamChange"]
@@ -29,11 +30,7 @@ class ParamChange(BaseTerraData):
     value: str = attr.ib()
 
     def to_amino(self) -> dict:
-        return {
-            "subspace": self.subspace,
-            "key": self.key,
-            "value": self.value
-        }
+        return {"subspace": self.subspace, "key": self.key, "value": self.value}
 
     @classmethod
     def from_data(cls, data: dict) -> ParamChange:
@@ -75,8 +72,8 @@ class ParameterChangeProposal(BaseTerraData):
             "value": {
                 "title": self.title,
                 "description": self.description,
-                "changes": [change.to_amino() for change in self.changes]
-            }
+                "changes": [change.to_amino() for change in self.changes],
+            },
         }
 
     @classmethod

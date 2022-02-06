@@ -5,9 +5,7 @@ from __future__ import annotations
 from typing import Dict, List, Optional
 
 import attr
-from cosmos_proto.cosmos.tx.signing.v1beta1 import (
-    SignatureDescriptor as SignatureDescriptor_pb,
-)
+from cosmos_proto.cosmos.tx.signing.v1beta1 import SignatureDescriptor as SignatureDescriptor_pb
 from cosmos_proto.cosmos.tx.signing.v1beta1 import (
     SignatureDescriptorDataMulti as SignatureDescriptorDataMulti_pb,
 )
@@ -57,9 +55,7 @@ class Single:
     signature: bytes = attr.ib()
 
     def to_proto(self) -> SignatureDescriptorDataSingle_pb:
-        return SignatureDescriptorDataSingle_pb(
-            mode=self.mode, signature=self.signature
-        )
+        return SignatureDescriptorDataSingle_pb(mode=self.mode, signature=self.signature)
 
     @classmethod
     def from_data(cls, data: dict) -> Single:

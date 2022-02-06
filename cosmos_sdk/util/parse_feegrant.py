@@ -1,4 +1,4 @@
-from cosmos_sdk.core.feegrant import BasicAllowance, PeriodicAllowance, AllowedMsgAllowance
+from cosmos_sdk.core.feegrant import AllowedMsgAllowance, BasicAllowance, PeriodicAllowance
 
 from .base import create_demux, create_demux_proto
 

@@ -49,9 +49,7 @@ class AsyncLCDClient:
             loop = get_event_loop()
         self.loop = loop
         if _create_session:
-            self.session = ClientSession(
-                headers={"Accept": "application/json"}, loop=self.loop
-            )
+            self.session = ClientSession(headers={"Accept": "application/json"}, loop=self.loop)
 
         self.chain_id = chain_id
         self.url = url
@@ -93,9 +91,7 @@ class AsyncLCDClient:
         if params and (type(params) is not dict and type(params) is not list):
             params = params.to_dict()
 
-        async with self.session.get(
-            urljoin(self.url, endpoint), params=params
-        ) as response:
+        async with self.session.get(urljoin(self.url, endpoint), params=params) as response:
             try:
                 result = await response.json(content_type=None)
             except JSONDecodeError:
@@ -105,9 +101,7 @@ class AsyncLCDClient:
         self.last_request_height = result.get("height")
         return result  # if raw else result["result"]
 
-    async def _post(
-        self, endpoint: str, data: Optional[dict] = None  # , raw: bool = False
-    ):
+    async def _post(self, endpoint: str, data: Optional[dict] = None):  # , raw: bool = False
         async with self.session.post(
             urljoin(self.url, endpoint), json=data and dict_to_data(data)
         ) as response:
@@ -261,9 +255,7 @@ class LCDClient(AsyncLCDClient):
     async def _get(self, *args, **kwargs):
         # session has to be manually created and torn down for each HTTP request in a
         # synchronous client
-        self.session = ClientSession(
-            headers={"Accept": "application/json"}, loop=self.loop
-        )
+        self.session = ClientSession(headers={"Accept": "application/json"}, loop=self.loop)
         try:
             result = await super()._get(*args, **kwargs)
         finally:
@@ -273,9 +265,7 @@ class LCDClient(AsyncLCDClient):
     async def _post(self, *args, **kwargs):
         # session has to be manually created and torn down for each HTTP request in a
         # synchronous client
-        self.session = ClientSession(
-            headers={"Accept": "application/json"}, loop=self.loop
-        )
+        self.session = ClientSession(headers={"Accept": "application/json"}, loop=self.loop)
         try:
             result = await super()._post(*args, **kwargs)
         finally:
@@ -285,9 +275,7 @@ class LCDClient(AsyncLCDClient):
     async def _search(self, *args, **kwargs):
         # session has to be manually created and torn down for each HTTP request in a
         # synchronous client
-        self.session = ClientSession(
-            headers={"Accept": "application/json"}, loop=self.loop
-        )
+        self.session = ClientSession(headers={"Accept": "application/json"}, loop=self.loop)
         try:
             result = await super()._search(*args, **kwargs)
         finally:

@@ -9,9 +9,7 @@ from cosmos_sdk.client.lcd import LCDClient
 class TestDoSessionGet(asynctest.TestCase):
     @aioresponses()
     def test_makes_request_to_expected_url(self, mocked):
-        mocked.get(
-            "https://lcd.terra.dev/node_info", status=200, body='{"response": "test"}'
-        )
+        mocked.get("https://lcd.terra.dev/node_info", status=200, body='{"response": "test"}')
         terra = LCDClient(chain_id="columbus-5", url="https://lcd.terra.dev")
 
         resp = terra.tendermint.node_info()
@@ -25,9 +23,7 @@ class TestDoSessionGet(asynctest.TestCase):
             status=200,
             body='{"response": "test"}',
         )
-        terra = LCDClient(
-            chain_id="columbus-5", url="https://lcd.terra.dev/access_token/"
-        )
+        terra = LCDClient(chain_id="columbus-5", url="https://lcd.terra.dev/access_token/")
 
         resp = terra.tendermint.node_info()
 

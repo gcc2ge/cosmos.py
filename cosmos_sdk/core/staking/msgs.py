@@ -5,12 +5,8 @@ from __future__ import annotations
 from typing import Optional
 
 import attr
-from cosmos_proto.cosmos.staking.v1beta1 import (
-    MsgBeginRedelegate as MsgBeginRedelegate_pb,
-)
-from cosmos_proto.cosmos.staking.v1beta1 import (
-    MsgCreateValidator as MsgCreateValidator_pb,
-)
+from cosmos_proto.cosmos.staking.v1beta1 import MsgBeginRedelegate as MsgBeginRedelegate_pb
+from cosmos_proto.cosmos.staking.v1beta1 import MsgCreateValidator as MsgCreateValidator_pb
 from cosmos_proto.cosmos.staking.v1beta1 import MsgDelegate as MsgDelegate_pb
 from cosmos_proto.cosmos.staking.v1beta1 import MsgEditValidator as MsgEditValidator_pb
 from cosmos_proto.cosmos.staking.v1beta1 import MsgUndelegate as MsgUndelegate_pb
@@ -61,8 +57,8 @@ class MsgBeginRedelegate(Msg):
                 "delegator_address": self.delegator_address,
                 "validator_src_address": self.validator_src_address,
                 "validator_dst_address": self.validator_dst_address,
-                "amount": self.amount.to_amino()
-            }
+                "amount": self.amount.to_amino(),
+            },
         }
 
     @classmethod
@@ -121,8 +117,8 @@ class MsgDelegate(Msg):
             "value": {
                 "delegator_address": self.delegator_address,
                 "validator_address": self.validator_address,
-                "amount": self.amount.to_amino()
-            }
+                "amount": self.amount.to_amino(),
+            },
         }
 
     @classmethod
@@ -178,8 +174,8 @@ class MsgUndelegate(Msg):
             "value": {
                 "delegator_address": self.delegator_address,
                 "validator_address": self.validator_address,
-                "amount": self.amount.to_amino()
-            }
+                "amount": self.amount.to_amino(),
+            },
         }
 
     @classmethod
@@ -257,9 +253,7 @@ class MsgEditValidator(Msg):
             validator_address=self.validator_address,
             commission_rate=str(self.commission_rate) if self.commission_rate else "0",
             min_self_delegation=(
-                str(self.min_self_delegation)
-                if self.min_self_delegation
-                else "0"
+                str(self.min_self_delegation) if self.min_self_delegation else "0"
             ),
         )
 

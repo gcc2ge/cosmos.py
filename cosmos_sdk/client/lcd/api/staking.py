@@ -4,12 +4,7 @@ from typing import List, Optional
 import attr
 
 from cosmos_sdk.core import AccAddress, Coin, Numeric, ValAddress
-from cosmos_sdk.core.staking import (
-    Delegation,
-    Redelegation,
-    UnbondingDelegation,
-    Validator,
-)
+from cosmos_sdk.core.staking import Delegation, Redelegation, UnbondingDelegation, Validator
 
 from ._base import BaseAsyncAPI, sync_bind
 
@@ -73,29 +68,23 @@ class AsyncStakingAPI(BaseAsyncAPI):
                 f"/cosmos/staking/v1beta1/validators/{validator}/delegations/{delegator}",
                 params,
             )
-            return [Delegation.from_data(res.get("delegation_response"))], res.get(
+            return [Delegation.from_data(res.get("delegation_response"))], res.get("pagination")
+        elif delegator is not None:
+            res = await self._c._get(f"/cosmos/staking/v1beta1/delegations/{delegator}", params)
+            return [Delegation.from_data(d) for d in res.get("delegation_responses")], res.get(
                 "pagination"
             )
-        elif delegator is not None:
-            res = await self._c._get(
-                f"/cosmos/staking/v1beta1/delegations/{delegator}", params
-            )
-            return [
-                Delegation.from_data(d) for d in res.get("delegation_responses")
-            ], res.get("pagination")
         elif validator is not None:
             res = await self._c._get(
                 f"/cosmos/staking/v1beta1/validators/{validator}/delegations", params
             )
-            return [
-                Delegation.from_data(d) for d in res.get("delegation_responses")
-            ], res.get("pagination")
+            return [Delegation.from_data(d) for d in res.get("delegation_responses")], res.get(
+                "pagination"
+            )
         else:
             raise TypeError("arguments delegator and validator cannot both be None")
 
-    async def delegation(
-        self, delegator: AccAddress, validator: ValAddress
-    ) -> Delegation:
+    async def delegation(self, delegator: AccAddress, validator: ValAddress) -> Delegation:
         """Fetch a single delegation via a delegator, validator pair.
 
         Args:
@@ -135,9 +124,7 @@ class AsyncStakingAPI(BaseAsyncAPI):
                 f"/cosmos/staking/v1beta1/validators/{validator}/delegations/{delegator}/unbonding_delegation",
                 params,
             )
-            return [UnbondingDelegation.from_data(res.get("unbond"))], res.get(
-                "pagination"
-            )
+            return [UnbondingDelegation.from_data(res.get("unbond"))], res.get("pagination")
         elif delegator is not None:
             res = await self._c._get(
                 f"/cosmos/staking/v1beta1/delegators/{delegator}/unbonding_delegations",
@@ -206,9 +193,9 @@ class AsyncStakingAPI(BaseAsyncAPI):
         res = await self._c._get(
             f"/cosmos/staking/v1beta1/delegators/{delegator}/redelegations", _params
         )
-        return [
-            Redelegation.from_data(d) for d in res.get("redelegation_responses")
-        ], res.get("pagination")
+        return [Redelegation.from_data(d) for d in res.get("redelegation_responses")], res.get(
+            "pagination"
+        )
 
     async def bonded_validators(
         self, delegator: AccAddress, params: Optional[PaginationOptions]
@@ -224,9 +211,7 @@ class AsyncStakingAPI(BaseAsyncAPI):
         res = await self._c._get(
             f"/cosmos/staking/v1beta1/delegators/{delegator}/validators", params
         )
-        return [Validator.from_data(d) for d in res.get("validators")], res.get(
-            "pagination"
-        )
+        return [Validator.from_data(d) for d in res.get("validators")], res.get("pagination")
 
     async def validators(self, params: Optional[APIParams]) -> (List[Validator], dict):
         """Fetch information of all validators.
@@ -235,9 +220,7 @@ class AsyncStakingAPI(BaseAsyncAPI):
             List[Validator]: validator informations
         """
         res = await self._c._get("/cosmos/staking/v1beta1/validators", params)
-        return [Validator.from_data(d) for d in res.get("validators")], res.get(
-            "pagination"
-        )
+        return [Validator.from_data(d) for d in res.get("validators")], res.get("pagination")
 
     async def validator(self, validator: ValAddress) -> Validator:
         """Fetch information about a single validator.

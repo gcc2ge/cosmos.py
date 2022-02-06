@@ -7,20 +7,16 @@ from typing import List, Optional
 
 import attr
 from betterproto import Message
-from dateutil import parser
-from cosmos_proto.cosmos.authz.v1beta1 import (
-    GenericAuthorization as GenericAuthorization_pb,
-)
+from cosmos_proto.cosmos.authz.v1beta1 import GenericAuthorization as GenericAuthorization_pb
 from cosmos_proto.cosmos.authz.v1beta1 import Grant as Grant_pb
 from cosmos_proto.cosmos.authz.v1beta1 import GrantAuthorization as GrantAuthorization_pb
 from cosmos_proto.cosmos.bank.v1beta1 import SendAuthorization as SendAuthorization_pb
 from cosmos_proto.cosmos.staking.v1beta1 import AuthorizationType
-from cosmos_proto.cosmos.staking.v1beta1 import (
-    StakeAuthorization as StakeAuthorization_pb,
-)
+from cosmos_proto.cosmos.staking.v1beta1 import StakeAuthorization as StakeAuthorization_pb
 from cosmos_proto.cosmos.staking.v1beta1 import (
     StakeAuthorizationValidators as StakeAuthorizationValidators_pb,
 )
+from dateutil import parser
 
 from cosmos_sdk.core import AccAddress, Coin, Coins
 from cosmos_sdk.util.base import BaseTerraData
@@ -73,9 +69,7 @@ class SendAuthorization(Authorization):
     def to_amino(self) -> dict:
         return {
             "type": self.type_amino,
-            "value": {
-                "spend_limit": self.spend_limit.to_amino()
-            }
+            "value": {"spend_limit": self.spend_limit.to_amino()},
         }
 
     @classmethod
@@ -107,12 +101,7 @@ class GenericAuthorization(Authorization):
     msg: str = attr.ib()
 
     def to_amino(self) -> dict:
-        return {
-            "type": self.type_amino,
-            "value": {
-                "msg": self.msg
-            }
-        }
+        return {"type": self.type_amino, "value": {"msg": self.msg}}
 
     @classmethod
     def from_data(cls, data: dict) -> GenericAuthorization:
@@ -139,20 +128,20 @@ class AuthorizationGrant(JSONSerializable):
     def to_amino(self) -> dict:
         return {
             "authorization": self.authorization.to_amino(),
-            "expiration": to_isoformat(self.expiration)
+            "expiration": to_isoformat(self.expiration),
         }
 
     def to_data(self) -> dict:
         return {
             "authorization": self.authorization.to_data(),
-            "expiration": to_isoformat(self.expiration)
+            "expiration": to_isoformat(self.expiration),
         }
 
     @classmethod
     def from_data(cls, data: dict) -> AuthorizationGrant:
         return cls(
             authorization=Authorization.from_data(data["authorization"]),
-            expiration=parser.parse(data["expiration"])
+            expiration=parser.parse(data["expiration"]),
         )
 
     @classmethod

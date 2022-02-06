@@ -1,4 +1,4 @@
-from cosmos_sdk.core.public_key import ValConsPubKey, SimplePublicKey, LegacyAminoPubKey
+from cosmos_sdk.core.public_key import LegacyAminoPubKey, SimplePublicKey, ValConsPubKey
 
 from .base import create_demux, create_demux_proto
 

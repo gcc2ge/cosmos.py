@@ -19,9 +19,7 @@ def main():
         "terravaloper19ne0aqltndwxl0n32zyuglp2z8mm3nu0gxpfaw"
     )
     print(result)
-    result = terra.distribution.withdraw_address(
-        "terra1x46rqay4d3cssq8gxxvqz8xt6nwlz4td20k38v"
-    )
+    result = terra.distribution.withdraw_address("terra1x46rqay4d3cssq8gxxvqz8xt6nwlz4td20k38v")
     print(result)
     result = terra.distribution.community_pool()
     print(result)

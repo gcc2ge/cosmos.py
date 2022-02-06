@@ -20,9 +20,7 @@ class AsyncTendermintAPI(BaseAsyncAPI):
         Returns:
             bool: syncing status
         """
-        return (await self._c._get("/cosmos/base/tendermint/v1beta1/syncing"))[
-            "syncing"
-        ]
+        return (await self._c._get("/cosmos/base/tendermint/v1beta1/syncing"))["syncing"]
 
     async def validator_set(self, height: Optional[int] = None) -> dict:
         """Fetches the validator set for a height. If no height is given, defaults to latest.

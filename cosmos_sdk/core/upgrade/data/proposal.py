@@ -37,8 +37,8 @@ class SoftwareUpgradeProposal(BaseTerraData):
             "value": {
                 "title": self.title,
                 "description": self.description,
-                "plan": self.plan.to_amino() if self.plan else None
-            }
+                "plan": self.plan.to_amino() if self.plan else None,
+            },
         }
 
     @classmethod
@@ -83,7 +83,7 @@ class CancelSoftwareUpgradeProposal(BaseTerraData):
             "value": {
                 "title": self.title,
                 "description": self.description,
-            }
+            },
         }
 
     @classmethod
@@ -91,10 +91,10 @@ class CancelSoftwareUpgradeProposal(BaseTerraData):
         return cls(title=data["title"], description=data["description"])
 
     @classmethod
-    def from_proto(cls, proto: CancelSoftwareUpgradeProposal_pb) -> CancelSoftwareUpgradeProposal:
+    def from_proto(
+        cls, proto: CancelSoftwareUpgradeProposal_pb
+    ) -> CancelSoftwareUpgradeProposal:
         return cls(title=proto.title, description=proto.description)
 
     def to_proto(self) -> CancelSoftwareUpgradeProposal_pb:
-        return CancelSoftwareUpgradeProposal_pb(
-            title=self.title, description=self.description
-        )
+        return CancelSoftwareUpgradeProposal_pb(title=self.title, description=self.description)

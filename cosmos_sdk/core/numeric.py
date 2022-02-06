@@ -11,7 +11,7 @@ from cosmos_sdk.util.json import JSONSerializable
 DEC_NUM_DIGITS = 18
 """Number of digits for Decimal."""
 
-DEC_ONE = 10 ** DEC_NUM_DIGITS
+DEC_ONE = 10**DEC_NUM_DIGITS
 DEC_PATTERN = re.compile(r"^(\-)?(\d+)(\.(\d+))?\Z")
 
 __all__ = ["DEC_NUM_DIGITS", "Dec", "Numeric"]
@@ -38,9 +38,7 @@ def convert_to_dec_bignum(arg: Union[str, int, float, Decimal]):
         fraction = int(arg % 1 * DEC_ONE)
         return whole + fraction
     else:
-        raise TypeError(
-            f"Unable to parse Dec integer representation from given argument {arg}"
-        )
+        raise TypeError(f"Unable to parse Dec integer representation from given argument {arg}")
 
 
 def chop_precision_and_round(d: int) -> int:

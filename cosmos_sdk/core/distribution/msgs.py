@@ -53,8 +53,8 @@ class MsgSetWithdrawAddress(Msg):
             "type": self.type_amino,
             "value": {
                 "delegator_address": self.delegator_address,
-                "withdraw_address": self.withdraw_address
-            }
+                "withdraw_address": self.withdraw_address,
+            },
         }
 
     @classmethod
@@ -105,14 +105,14 @@ class MsgWithdrawDelegationReward(Msg):
             "value": {
                 "delegator_address": self.delegator_address,
                 "validator_address": self.validator_address,
-            }
+            },
         }
 
     @classmethod
     def from_data(cls, data: dict) -> MsgWithdrawDelegationReward:
         return cls(
             delegator_address=data["delegator_address"],
-            validator_address=data["validator_address"]
+            validator_address=data["validator_address"],
         )
 
     @classmethod
@@ -125,7 +125,7 @@ class MsgWithdrawDelegationReward(Msg):
     def to_proto(self) -> MsgWithdrawDelegatorReward_pb:
         return MsgWithdrawDelegatorReward_pb(
             delegator_address=self.delegator_address,
-            validator_address=self.validator_address
+            validator_address=self.validator_address,
         )
 
 
@@ -151,9 +151,7 @@ class MsgWithdrawValidatorCommission(Msg):
     def to_amino(self) -> dict:
         return {
             "type": self.type_amino,
-            "value": {
-                "validator_address": self.validator_address
-            }
+            "value": {"validator_address": self.validator_address},
         }
 
     @classmethod
@@ -168,9 +166,7 @@ class MsgWithdrawValidatorCommission(Msg):
         return cls(validator_address=ValAddress(proto.validator_address))
 
     def to_proto(self) -> MsgWithdrawValidatorCommission_pb:
-        return MsgWithdrawValidatorCommission_pb(
-            validator_address=self.validator_address
-        )
+        return MsgWithdrawValidatorCommission_pb(validator_address=self.validator_address)
 
 
 @attr.s
@@ -195,10 +191,7 @@ class MsgFundCommunityPool(Msg):
     def to_amino(self) -> dict:
         return {
             "type": self.type_amino,
-            "value": {
-                "depositor": self.depositor,
-                "amount": self.amount.to_amino()
-            }
+            "value": {"depositor": self.depositor, "amount": self.amount.to_amino()},
         }
 
     @classmethod
@@ -213,6 +206,4 @@ class MsgFundCommunityPool(Msg):
         )
 
     def to_proto(self) -> MsgFundCommunityPool_pb:
-        return MsgFundCommunityPool_pb(
-            depositor=self.depositor, amount=self.amount.to_proto()
-        )
+        return MsgFundCommunityPool_pb(depositor=self.depositor, amount=self.amount.to_proto())

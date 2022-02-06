@@ -17,7 +17,7 @@ class Height(JSONSerializable):
     def to_amino(self) -> dict:
         return {
             "revision_number": self.revision_number,
-            "revision_height": self.revision_height
+            "revision_height": self.revision_height,
         }
 
     @classmethod

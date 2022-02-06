@@ -57,9 +57,7 @@ class AsyncWasmAPI(BaseAsyncAPI):
             Any: results of query
         """
         params = {
-            "query_msg": base64.b64encode(json.dumps(query).encode("utf-8")).decode(
-                "utf-8"
-            )
+            "query_msg": base64.b64encode(json.dumps(query).encode("utf-8")).decode("utf-8")
         }
         res = await self._c._get(
             f"/terra/wasm/v1beta1/contracts/{contract_address}/store", params

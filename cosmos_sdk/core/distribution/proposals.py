@@ -43,8 +43,8 @@ class CommunityPoolSpendProposal(BaseTerraData):
                 "title": self.title,
                 "description": self.description,
                 "recipient": self.recipient,
-                "amount": self.amount.to_amino()
-            }
+                "amount": self.amount.to_amino(),
+            },
         }
 
     @classmethod

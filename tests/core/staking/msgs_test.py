@@ -14,8 +14,6 @@ def test_deserialize_msg_undelegate_examples(load_msg_examples):
 
 
 def test_deserialize_msg_begin_redelegate_examples(load_msg_examples):
-    examples = load_msg_examples(
-        MsgBeginRedelegate.type, "./MsgBeginRedelegate.data.json"
-    )
+    examples = load_msg_examples(MsgBeginRedelegate.type, "./MsgBeginRedelegate.data.json")
     for example in examples:
         assert MsgBeginRedelegate.from_data(example).to_data() == example

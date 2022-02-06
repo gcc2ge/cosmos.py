@@ -41,8 +41,8 @@ class MsgSwap(Msg):
             "value": {
                 "trader": self.trader,
                 "offer_coin": self.offer_coin.to_amino(),
-                "ask_denom": self.ask_denom
-            }
+                "ask_denom": self.ask_denom,
+            },
         }
 
     @classmethod
@@ -101,8 +101,8 @@ class MsgSwapSend(Msg):
                 "from_address": self.from_address,
                 "to_address": self.to_address,
                 "offer_coin": self.offer_coin.to_amino(),
-                "ask_denom": self.ask_denom
-            }
+                "ask_denom": self.ask_denom,
+            },
         }
 
     @classmethod

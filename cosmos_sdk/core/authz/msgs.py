@@ -42,15 +42,13 @@ class MsgExecAuthorized(Msg):
             "type": self.type_amino,
             "value": {
                 "grantee": self.grantee,
-                "msgs": [msg.to_amino() for msg in self.msgs]
-            }
+                "msgs": [msg.to_amino() for msg in self.msgs],
+            },
         }
 
     @classmethod
     def from_data(cls, data: dict) -> MsgExecAuthorized:
-        return cls(
-            grantee=data["grantee"], msgs=[Msg.from_data(md) for md in data["msgs"]]
-        )
+        return cls(grantee=data["grantee"], msgs=[Msg.from_data(md) for md in data["msgs"]])
 
     @classmethod
     def from_proto(cls, proto: MsgExec_pb) -> MsgExecAuthorized:
@@ -90,8 +88,8 @@ class MsgGrantAuthorization(Msg):
             "value": {
                 "granter": self.granter,
                 "grantee": self.grantee,
-                "grant": self.grant.to_amino()
-            }
+                "grant": self.grant.to_amino(),
+            },
         }
 
     @classmethod
@@ -145,8 +143,8 @@ class MsgRevokeAuthorization(Msg):
             "value": {
                 "granter": self.granter,
                 "grantee": self.grantee,
-                "msg_type_url": self.msg_type_url
-            }
+                "msg_type_url": self.msg_type_url,
+            },
         }
 
     @classmethod
