@@ -17,8 +17,8 @@ keywords = ["blockchain", "cosmos", "defi", "crypto", "terra", "osmosis"]
 license = "MIT"
 packages = [{ include = "cosmos_sdk" }]
 readme = "README.md"
-repository = "https://github.com/fabio-nukui/cosmos.py"
-version = "2.0.0-beta9"
+repository = "https://github.com/gcc2ge/cosmos.py"
+version = "2.0.0-beta10"
 
 [tool.poetry.dependencies]
 aiohttp = "^3.7.3"
