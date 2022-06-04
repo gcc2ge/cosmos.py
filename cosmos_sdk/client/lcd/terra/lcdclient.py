@@ -14,25 +14,25 @@ from cosmos_sdk.key.key import Key
 from cosmos_sdk.util.json import dict_to_data
 from cosmos_sdk.util.url import urljoin
 
-from .api.auth import AsyncAuthAPI, AuthAPI
-from .api.authz import AsyncAuthzAPI, AuthzAPI
-from .api.bank import AsyncBankAPI, BankAPI
-from .api.distribution import AsyncDistributionAPI, DistributionAPI
-from .api.gov import AsyncGovAPI, GovAPI
-from .api.ibc import AsyncIbcAPI, IbcAPI
-from .api.ibc_transfer import AsyncIbcTransferAPI, IbcTransferAPI
-from .api.market import AsyncMarketAPI, MarketAPI
-from .api.mint import AsyncMintAPI, MintAPI
-from .api.oracle import AsyncOracleAPI, OracleAPI
-from .api.slashing import AsyncSlashingAPI, SlashingAPI
-from .api.staking import AsyncStakingAPI, StakingAPI
-from .api.tendermint import AsyncTendermintAPI, TendermintAPI
-from .api.treasury import AsyncTreasuryAPI, TreasuryAPI
-from .api.tx import AsyncTxAPI, TxAPI
-from .api.wasm import AsyncWasmAPI, WasmAPI
-from .lcdutils import AsyncLCDUtils, LCDUtils
-from .params import APIParams, PaginationOptions
-from .wallet import AsyncWallet, Wallet
+from ..api.auth import AsyncAuthAPI, AuthAPI
+from ..api.authz import AsyncAuthzAPI, AuthzAPI
+from ..api.bank import AsyncBankAPI, BankAPI
+from ..api.distribution import AsyncDistributionAPI, DistributionAPI
+from ..api.gov import AsyncGovAPI, GovAPI
+from ..api.ibc import AsyncIbcAPI, IbcAPI
+from ..api.ibc_transfer import AsyncIbcTransferAPI, IbcTransferAPI
+from ..api.terra.market import AsyncMarketAPI, MarketAPI
+from ..api.mint import AsyncMintAPI, MintAPI
+from ..api.terra.oracle import AsyncOracleAPI, OracleAPI
+from ..api.slashing import AsyncSlashingAPI, SlashingAPI
+from ..api.staking import AsyncStakingAPI, StakingAPI
+from ..api.tendermint import AsyncTendermintAPI, TendermintAPI
+from ..api.terra.treasury import AsyncTreasuryAPI, TreasuryAPI
+from ..api.tx import AsyncTxAPI, TxAPI
+from ..api.terra.wasm import AsyncWasmAPI, WasmAPI
+from ..lcdutils import AsyncLCDUtils, LCDUtils
+from ..params import APIParams, PaginationOptions
+from ..wallet import AsyncWallet, Wallet
 
 
 class AsyncLCDClient:

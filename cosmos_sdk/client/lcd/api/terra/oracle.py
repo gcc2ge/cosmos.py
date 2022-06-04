@@ -4,7 +4,7 @@ from cosmos_sdk.core import AccAddress, Coin, Coins, Dec, Numeric, ValAddress
 from cosmos_sdk.core.oracle import AggregateExchangeRatePrevote, AggregateExchangeRateVote
 from cosmos_sdk.exceptions import LCDResponseError
 
-from ._base import BaseAsyncAPI, sync_bind
+from .._base import BaseAsyncAPI, sync_bind
 
 __all__ = ["AsyncOracleAPI", "OracleAPI"]
 

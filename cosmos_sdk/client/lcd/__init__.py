@@ -1,4 +1,4 @@
-from .lcdclient import AsyncLCDClient, LCDClient
+from .terra.lcdclient import AsyncLCDClient, LCDClient
 from .params import PaginationOptions
 from .wallet import AsyncWallet, Wallet
 

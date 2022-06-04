@@ -3,7 +3,7 @@ from typing import Optional
 from cosmos_sdk.core import Coin, Coins, Dec, Numeric
 from cosmos_sdk.core.treasury import PolicyConstraints
 
-from ._base import BaseAsyncAPI, sync_bind
+from .._base import BaseAsyncAPI, sync_bind
 
 __all__ = ["AsyncTreasuryAPI", "TreasuryAPI"]
 

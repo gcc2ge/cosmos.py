@@ -4,7 +4,7 @@ from typing import Any
 
 from cosmos_sdk.core import Numeric
 
-from ._base import BaseAsyncAPI, sync_bind
+from .._base import BaseAsyncAPI, sync_bind
 
 __all__ = ["AsyncWasmAPI", "WasmAPI"]
 

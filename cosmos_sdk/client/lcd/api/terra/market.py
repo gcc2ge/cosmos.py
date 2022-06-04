@@ -1,6 +1,6 @@
 from cosmos_sdk.core import Coin, Dec
 
-from ._base import BaseAsyncAPI, sync_bind
+from .._base import BaseAsyncAPI, sync_bind
 
 __all__ = ["AsyncMarketAPI", "MarketAPI"]
 

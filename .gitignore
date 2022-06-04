@@ -108,3 +108,5 @@ ENV/
 
 # MacOS
 .DS_Store
+
+myenv/
