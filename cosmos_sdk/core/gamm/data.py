@@ -18,8 +18,8 @@ class PoolParams:
 
     def to_data(self) -> dict:
         return {
-            "swapFee": str(self.swap_fee),
-            "exitFee": str(self.exit_fee),
+            "swapFee": self.swap_fee.to_short_str(),
+            "exitFee": self.exit_fee.to_short_str(),
         }
 
     @classmethod
@@ -37,7 +37,7 @@ class PoolAsset:
     def to_data(self) -> dict:
         return {
             "token": self.token.to_data(),
-            "weight": str(self.weight),
+            "weight": self.weight.to_short_str(),
         }
 
     @classmethod
@@ -65,7 +65,7 @@ class Pool:
             "poolParams": self.pool_params.to_data(),
             "totalShares": self.total_shares.to_data(),
             "poolAssets": [ pool_asset.to_data() for pool_asset in self.pool_assets],
-            "totalWeight": self.total_weight.to_data()
+            "totalWeight": self.total_weight.to_short_str()
         }
 
     @classmethod
