@@ -53,6 +53,7 @@ class PoolAssets:
 @attr.s
 class Pool:
     id: int = attr.ib()
+    address: str = attr.ib()
     pool_params: PoolParams=attr.ib()
     total_shares: Coin = attr.ib(converter=Coin.parse)
     pool_assets: List[PoolAsset] = attr.ib()
@@ -62,6 +63,7 @@ class Pool:
     def to_data(self) -> dict:
         return {
             "id": str(self.id),
+            "address": self.address,
             "poolParams": self.pool_params.to_data(),
             "totalShares": self.total_shares.to_data(),
             "poolAssets": [ pool_asset.to_data() for pool_asset in self.pool_assets],
@@ -72,6 +74,7 @@ class Pool:
     def from_data(cls, data: dict) -> SwapAmountInRoute:
         return cls(
             id = int(data["id"]),
+            address = data["address"],
             pool_params = PoolParams.from_data(data['poolParams']),
             total_shares = Coin.from_data(data["totalShares"]),
             pool_assets = [ PoolAsset.from_data(asset) for asset in data["poolAssets"]],
