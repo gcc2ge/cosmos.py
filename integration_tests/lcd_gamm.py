@@ -16,7 +16,7 @@ def main():
     # print(result)
 
     result = terra.gamm.pool(1)
-    print(result)
+    print(result.to_data())
 
 
 main()

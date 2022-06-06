@@ -19,7 +19,7 @@ class PoolParams:
     def to_data(self) -> dict:
         return {
             "swapFee": str(self.swap_fee),
-            "swapFee": str(self.exit_fee),
+            "exitFee": str(self.exit_fee),
         }
 
     @classmethod
