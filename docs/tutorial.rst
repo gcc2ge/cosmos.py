@@ -16,7 +16,7 @@ using ``pip`` as follows:
 
 .. code-block:: shell
 
-   $ pip install cosmos_sdk 
+   $ pip install terra-sdk 
 
 
 .. note:: If you run into problems during installation, you might have a
@@ -33,9 +33,9 @@ This can be done through setting up an LCDClient:
 
 .. code-block:: python
 
-    from cosmos_sdk.client.lcd import LCDClient
+    from terra_sdk.client.lcd import LCDClient
 
-    terra = LCDClient(chain_id="columbus-4", url="https://lcd.terra.dev")
+    terra = LCDClient(chain_id="columbus-5", url="https://lcd.terra.dev")
     print(terra.tendermint.node_info())
 
 

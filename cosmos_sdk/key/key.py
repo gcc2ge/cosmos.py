@@ -1,19 +1,28 @@
 import abc
-import base64
 import copy
-import hashlib
 from typing import Optional
 
 import attr
-from bech32 import bech32_encode, convertbits
 
-from cosmos_sdk.core import AccAddress, AccPubKey, SignatureV2, SignDoc, ValAddress, ValPubKey
-from cosmos_sdk.core.public_key import PublicKey
+from cosmos_sdk.core import (
+    AccAddress,
+    AccPubKey,
+    ModeInfo,
+    ModeInfoSingle,
+    SignatureV2,
+    SignDoc,
+    ValAddress,
+    ValPubKey,
+)
+from cosmos_sdk.core.bech32 import get_bech
+from cosmos_sdk.core.public_key import (
+    PublicKey,
+    address_from_public_key,
+    amino_pubkey_from_public_key,
+)
 from cosmos_sdk.core.signature_v2 import Descriptor
 from cosmos_sdk.core.signature_v2 import Single as SingleDescriptor
-from cosmos_sdk.core.tx import ModeInfo, ModeInfoSingle, SignerInfo, SignMode, Tx
-
-BECH32_PUBKEY_DATA_PREFIX = "eb5ae98721"
+from cosmos_sdk.core.tx import AuthInfo, SignerInfo, SignMode, Tx
 
 __all__ = ["Key", "SignOptions"]
 
@@ -24,27 +33,6 @@ class SignOptions:
     sequence: int = attr.ib(converter=int)
     sign_mode: SignMode = attr.ib()
     chain_id: str = attr.ib()
-
-
-def get_bech(prefix: str, payload: str) -> str:
-    data = convertbits(bytes.fromhex(payload), 8, 5)
-    if data is None:
-        raise ValueError(f"could not parse data: prefix {prefix}, payload {payload}")
-    return bech32_encode(prefix, data)  # base64 -> base32
-
-
-def address_from_public_key(public_key: PublicKey) -> bytes:
-    sha = hashlib.sha256()
-    rip = hashlib.new("ripemd160")
-    sha.update(public_key.key)
-    rip.update(sha.digest())
-    return rip.digest()
-
-
-def pubkey_from_public_key(public_key: PublicKey) -> bytes:
-    arr = bytearray.fromhex(BECH32_PUBKEY_DATA_PREFIX)
-    arr += bytearray(public_key.key)
-    return bytes(arr)
 
 
 class Key:
@@ -69,9 +57,9 @@ class Key:
 
     def __init__(self, public_key: Optional[PublicKey] = None):
         self.public_key = public_key
-        if public_key is not None:
+        if public_key:
             self.raw_address = address_from_public_key(public_key)
-            self.raw_pubkey = pubkey_from_public_key(public_key)
+            self.raw_pubkey = amino_pubkey_from_public_key(public_key)
 
     @abc.abstractmethod
     def sign(self, payload: bytes) -> bytes:
@@ -144,28 +132,31 @@ class Key:
             raise ValueError("could not compute val_pubkey: missing raw_pubkey")
         return ValPubKey(get_bech("terravaloperpub", self.raw_pubkey.hex()))
 
-    def create_signature_amino(self, signDoc: SignDoc) -> SignatureV2:
+    def create_signature_amino(self, sign_doc: SignDoc) -> SignatureV2:
         if self.public_key is None:
-            raise ValueError("signature could not be created: Key instance missing public_key")
+            raise ValueError(
+                "signature could not be created: Key instance missing public_key"
+            )
 
         return SignatureV2(
             public_key=self.public_key,
             data=Descriptor(
                 SingleDescriptor(
                     mode=SignMode.SIGN_MODE_LEGACY_AMINO_JSON,
-                    signature=(self.sign(signDoc.to_amino())),
+                    signature=(self.sign(sign_doc.to_amino_json()))
+                    # signature=base64.b64encode(self.sign(sign_doc.to_amino_json()))
                 )
             ),
-            sequence=signDoc.sequence,
+            sequence=sign_doc.sequence,
         )
 
-    def create_signature(self, signDoc: SignDoc) -> SignatureV2:
+    def create_signature(self, sign_doc: SignDoc) -> SignatureV2:
         """Signs the transaction with the signing algorithm provided by this Key implementation,
         and outputs the signature. The signature is only returned, and must be manually added to
         the ``signatures`` field of an :class:`Tx`.
 
         Args:
-            signDoc (SignDoc): unsigned transaction
+            sign_doc (SignDoc): unsigned transaction
 
         Raises:
             ValueError: if missing ``public_key``
@@ -174,28 +165,34 @@ class Key:
             SignatureV2: signature object
         """
         if self.public_key is None:
-            raise ValueError("signature could not be created: Key instance missing public_key")
+            raise ValueError(
+                "signature could not be created: Key instance missing public_key"
+            )
 
         # make backup
-        si_backup = copy.deepcopy(signDoc.auth_info.signer_infos)
-        signDoc.auth_info.signer_infos = [
+        si_backup = copy.deepcopy(sign_doc.auth_info.signer_infos)
+        sign_doc.auth_info.signer_infos = [
             SignerInfo(
                 public_key=self.public_key,
-                sequence=signDoc.sequence,
-                mode_info=ModeInfo(single=ModeInfoSingle(mode=SignMode.SIGN_MODE_DIRECT)),
+                sequence=sign_doc.sequence,
+                mode_info=ModeInfo(
+                    single=ModeInfoSingle(mode=SignMode.SIGN_MODE_DIRECT)
+                ),
             )
         ]
-        signature = self.sign(signDoc.to_bytes())
+        signature = self.sign(sign_doc.to_bytes())
 
         # restore
-        signDoc.auth_info.signer_infos = si_backup
+        sign_doc.auth_info.signer_infos = si_backup
 
         return SignatureV2(
             public_key=self.public_key,
             data=Descriptor(
-                single=SingleDescriptor(mode=SignMode.SIGN_MODE_DIRECT, signature=signature)
+                single=SingleDescriptor(
+                    mode=SignMode.SIGN_MODE_DIRECT, signature=signature
+                )
             ),
-            sequence=signDoc.sequence,
+            sequence=sign_doc.sequence,
         )
 
     def sign_tx(self, tx: Tx, options: SignOptions) -> Tx:
@@ -210,7 +207,11 @@ class Key:
             Tx: ready-to-broadcast transaction object
         """
 
-        signedTx = copy.deepcopy(tx)
+        signedTx = Tx(
+            body=tx.body,
+            auth_info=AuthInfo(signer_infos=[], fee=tx.auth_info.fee),
+            signatures=[],
+        )
         signDoc = SignDoc(
             chain_id=options.chain_id,
             account_number=options.account_number,

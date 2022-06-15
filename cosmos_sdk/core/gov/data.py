@@ -1,38 +1,23 @@
 """Gov module data types."""
 
 from __future__ import annotations
-
-import copy
 from datetime import datetime
-from typing import List, Union
-
+from typing import List
 import attr
-from cosmos_proto.cosmos.gov.v1beta1 import Proposal as Proposal_pb
-from cosmos_proto.cosmos.gov.v1beta1 import TallyResult as TallyResult_pb
-from cosmos_proto.cosmos.gov.v1beta1 import Vote as Vote_pb
-from cosmos_proto.cosmos.gov.v1beta1 import VoteOption
-from cosmos_proto.cosmos.gov.v1beta1 import WeightedVoteOption as WeightedVoteOption_pb
 from dateutil import parser
 
+from terra_proto.cosmos.gov.v1beta1 import Proposal as Proposal_pb, ProposalStatus
+from terra_proto.cosmos.gov.v1beta1 import TallyResult as TallyResult_pb
+from terra_proto.cosmos.gov.v1beta1 import Vote as Vote_pb
+from terra_proto.cosmos.gov.v1beta1 import VoteOption
+from terra_proto.cosmos.gov.v1beta1 import WeightedVoteOption as WeightedVoteOption_pb
+
 from cosmos_sdk.core import AccAddress, Coins
-from cosmos_sdk.core.distribution import CommunityPoolSpendProposal
-from cosmos_sdk.core.params import ParameterChangeProposal
-from cosmos_sdk.core.upgrade import CancelSoftwareUpgradeProposal, SoftwareUpgradeProposal
-from cosmos_sdk.util.json import JSONSerializable, dict_to_data
+from cosmos_sdk.util.json import JSONSerializable
+from cosmos_sdk.util.converter import to_isoformat
+from cosmos_sdk.util.parse_content import parse_content, Content
 
-from .proposals import TextProposal
-
-__all__ = ["Proposal", "Content", "VoteOption", "WeightedVoteOption"]
-
-from ...util.converter import to_isoformat
-
-Content = Union[
-    TextProposal,
-    CommunityPoolSpendProposal,
-    ParameterChangeProposal,
-    SoftwareUpgradeProposal,
-    CancelSoftwareUpgradeProposal,
-]
+__all__ = ["Proposal", "Content", "VoteOption", "WeightedVoteOption", "ProposalStatus"]
 
 
 @attr.s
@@ -43,6 +28,14 @@ class TallyResult(JSONSerializable):
     no_with_veto: str = attr.ib()
 
     def to_amino(self) -> dict:
+        return {
+            "yes": self.yes,
+            "abstain": self.abstain,
+            "no": self.no,
+            "no_with_veto": self.no_with_veto,
+        }
+
+    def to_data(self) -> dict:
         return {
             "yes": self.yes,
             "abstain": self.abstain,
@@ -99,11 +92,6 @@ class Proposal(JSONSerializable):
     voting_end_time: datetime = attr.ib(converter=parser.parse)
     """Time at which voting period ended, or will end."""
 
-    def to_data(self) -> dict:
-        d = copy.deepcopy(self.__dict__)
-        d["id"] = str(d["id"])
-        return dict_to_data(d)
-
     def to_amino(self) -> dict:
         return {
             "proposal_id": str(self.proposal_id),
@@ -121,21 +109,21 @@ class Proposal(JSONSerializable):
     def from_data(cls, data: dict) -> Proposal:
         return cls(
             proposal_id=data["proposal_id"],
-            content=Content.from_data(data["content"]),
+            content=parse_content(data["content"]),
             status=data["status"],
             final_tally_result=data["final_tally_result"],
-            submit_time=to_isoformat(data["submit_time"]),
-            deposit_end_time=to_isoformat(data["deposit_end_time"]),
+            submit_time=parser.parse(data["submit_time"]),
+            deposit_end_time=parser.parse(data["deposit_end_time"]),
             total_deposit=Coins.from_data(data["total_deposit"]),
-            voting_start_time=to_isoformat(data["voting_start_time"]),
-            voting_end_time=to_isoformat(data["voting_end_time"]),
+            voting_start_time=parser.parse(data["voting_start_time"]),
+            voting_end_time=parser.parse(data["voting_end_time"]),
         )
 
     def to_proto(self) -> Proposal_pb:
         return Proposal_pb(
             proposal_id=self.proposal_id,
             content=self.content.pack_any(),
-            status=self.status,
+            status=ProposalStatus.from_str(self.status),
             final_tally_result=self.final_tally_result.to_proto(),
             submit_time=self.submit_time,
             deposit_end_time=self.deposit_end_time,
@@ -151,6 +139,9 @@ class WeightedVoteOption(JSONSerializable):
     option: VoteOption = attr.ib(converter=int)
 
     def to_amino(self) -> dict:
+        return {"weight": self.weight, "option": self.option.name}
+
+    def to_data(self) -> dict:
         return {"weight": self.weight, "option": self.option.name}
 
     @classmethod
@@ -174,6 +165,13 @@ class Vote(JSONSerializable):
             "options": [opt.to_amino() for opt in self.options],
         }
 
+    def to_data(self) -> dict:
+        return {
+            "proposal_id": str(self.proposal_id),
+            "voter": self.voter,
+            "options": [opt.to_data() for opt in self.options],
+        }
+
     @classmethod
     def from_data(cls, data: dict) -> Vote:
         return cls(
@@ -183,4 +181,6 @@ class Vote(JSONSerializable):
         )
 
     def to_proto(self) -> Vote_pb:
-        return Vote_pb(proposal_id=self.proposal_id, voter=self.voter, options=self.options)
+        return Vote_pb(
+            proposal_id=self.proposal_id, voter=self.voter, options=self.options
+        )

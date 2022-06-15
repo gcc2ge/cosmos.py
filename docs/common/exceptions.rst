@@ -1,5 +1,5 @@
 Exceptions
 ==========
 
-.. automodule:: cosmos_sdk.exceptions
+.. automodule:: terra_sdk.exceptions
     :members:

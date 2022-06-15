@@ -23,8 +23,8 @@ LOCALTERRA_MNEMONICS = {
 LOCALTERRA_DEFAULTS = {
     "url": "http://localhost:1317",
     "chain_id": "localterra",
-    "gas_prices": {"uluna": "0.013199"},
-    "gas_adjustment": 1.4,
+    "gas_prices": {"uusd": "0.15"},
+    "gas_adjustment": 1.75,
 }
 
 
@@ -40,7 +40,9 @@ class AsyncLocalTerra(AsyncLCDClient):
         options = {**LOCALTERRA_DEFAULTS, **kwargs}
         super().__init__(*args, **options)
         self.wallets = {
-            wallet_name: self.wallet(MnemonicKey(mnemonic=LOCALTERRA_MNEMONICS[wallet_name]))
+            wallet_name: self.wallet(
+                MnemonicKey(mnemonic=LOCALTERRA_MNEMONICS[wallet_name])
+            )
             for wallet_name in LOCALTERRA_MNEMONICS
         }
 
@@ -62,6 +64,8 @@ class LocalTerra(LCDClient):
         options = {**LOCALTERRA_DEFAULTS, **kwargs}
         super().__init__(*args, **options)
         self.wallets = {
-            wallet_name: self.wallet(MnemonicKey(mnemonic=LOCALTERRA_MNEMONICS[wallet_name]))
+            wallet_name: self.wallet(
+                MnemonicKey(mnemonic=LOCALTERRA_MNEMONICS[wallet_name])
+            )
             for wallet_name in LOCALTERRA_MNEMONICS
         }

@@ -10,8 +10,7 @@ Introduction
     :align: center
     
 
-Welcome to the official documentation for the Python version of the Terra SDK. The Terra SDK
-is a simple library toolkit for building software that can interacts with the Terra blockchain. 
+Welcome to the official documentation for the Terra Python SDK, a simple library toolkit for building software that interacts with the Terra blockchain. 
 
 Unfamiliar with Terra? → `Check out Terra Docs <https://docs.terra.money>`_
 
@@ -28,6 +27,7 @@ Unfamiliar with Terra? → `Check out Terra Docs <https://docs.terra.money>`_
     guides/async
     guides/transactions
     guides/smart_contracts
+    guides/pagination
     guides/custom_key
     guides/troubleshooting
 
@@ -53,20 +53,20 @@ Unfamiliar with Terra? → `Check out Terra Docs <https://docs.terra.money>`_
     :caption: Core Modules Reference
     
     core_modules/auth
+    core_modules/authz
     core_modules/bank
     core_modules/distribution
     core_modules/gov
     core_modules/market
     core_modules/mint
-    core_modules/authz
     core_modules/oracle
     core_modules/params
     core_modules/slashing
     core_modules/staking
     core_modules/tendermint
-    core_modules/treasury
     core_modules/tx
     core_modules/wasm
+    core_modules/ibc_transfer
 
 
 

@@ -13,7 +13,9 @@ from cosmos_sdk.core.bech32 import (
 
 def test_validates_acc_address():
     assert not is_acc_address("terravaloper1pdx498r0hrc2fj36sjhs8vuhrz9hd2cw0yhqtk")
-    assert not is_acc_address("terra1pdx498r0h7c2fj36sjhs8vu8rz9hd2cw0tmam9")  # bad checksum
+    assert not is_acc_address(
+        "terra1pdx498r0h7c2fj36sjhs8vu8rz9hd2cw0tmam9"
+    )  # bad checksum
     assert not is_acc_address("cosmos176m2p8l3fps3dal7h8gf9jvrv98tu3rqfdht86")
 
     assert is_acc_address("terra1pdx498r0hrc2fj36sjhs8vuhrz9hd2cw0tmam9")

@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+from typing import Optional
 
 import attr
-from cosmos_proto.cosmos.tx.v1beta1 import Fee as Fee_pb
+from terra_proto.cosmos.tx.v1beta1 import Fee as Fee_pb
 
 from cosmos_sdk.core.bech32 import AccAddress
 from cosmos_sdk.core.coins import Coins
@@ -21,6 +21,8 @@ class Fee(JSONSerializable):
     Args:
         gas (int): gas to use ("gas requested")
         amount (Coins.Input): fee amount
+        payer (AccAddress, optional): address of fee payer
+        granter (AccAddress, optional): address of fee granter
     """
 
     gas_limit: int = attr.ib(converter=int)
@@ -44,8 +46,8 @@ class Fee(JSONSerializable):
         return {
             "gas_limit": str(self.gas_limit),
             "amount": self.amount.to_data(),
-            "payer": self.payer if self.payer else "",
-            "granter": self.granter if self.granter else "",
+            "payer": str(self.payer),
+            "granter": str(self.granter),
         }
 
     def to_proto(self) -> Fee_pb:
@@ -61,13 +63,9 @@ class Fee(JSONSerializable):
         return cls(
             gas_limit=proto.gas_limit,
             amount=Coins.from_proto(proto.amount),
-            payer=AccAddress(proto.payer),
-            granter=AccAddress(proto.granter),
+            payer=proto.payer,
+            granter=proto.granter,
         )
-
-    @classmethod
-    def from_proto_bytes(cls, data: bytes) -> Fee:
-        return cls.from_proto(Fee_pb.FromString(data))
 
     @property
     def gas_prices(self) -> Coins:

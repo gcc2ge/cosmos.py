@@ -1,4 +1,10 @@
-from .data import Authorization, AuthorizationGrant, GenericAuthorization, SendAuthorization
+from .data import (
+    Authorization,
+    AuthorizationGrant,
+    GenericAuthorization,
+    SendAuthorization,
+    StakeAuthorization,
+)
 from .msgs import MsgExecAuthorized, MsgGrantAuthorization, MsgRevokeAuthorization
 
 __all__ = [
@@ -8,5 +14,6 @@ __all__ = [
     "Authorization",
     "SendAuthorization",
     "GenericAuthorization",
+    "StakeAuthorization",
     "AuthorizationGrant",
 ]

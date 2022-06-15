@@ -1,7 +1,7 @@
 Usage with asyncio
 ==================
     
-If you want to make asynchronous, non-blocking LCD requests, you can use AsyncLCDClient.
+You can use AsyncLCDClient to make asynchronous, non-blocking LCD requests.
 The interface is similar to LCDClient, except the module and wallet API functions must be awaited.
 
 Async module APIs
@@ -13,7 +13,7 @@ You can replace your LCDClient instance with AsyncLCDClient inside a coroutine f
     :emphasize-lines: 5,8
 
     import asyncio 
-    from cosmos_sdk.client.lcd import AsyncLCDClient
+    from terra_sdk.client.lcd import AsyncLCDClient
 
     async def main():
         terra = AsyncLCDClient("https://lcd.terra.dev", "columbus-5")
@@ -31,7 +31,7 @@ session. Here's the same code as above, this time using the ``async with`` const
     :emphasize-lines: 5
 
     import asyncio 
-    from cosmos_sdk.client.lcd import AsyncLCDClient
+    from terra_sdk.client.lcd import AsyncLCDClient
 
     async def main():
         async with AsyncLCDClient("https://lcd.terra.dev", "columbus-5") as terra:
@@ -49,10 +49,11 @@ are also asychronous and therefore must be awaited.
 .. code-block:: python
     :emphasize-lines: 12-13
 
-    import asyncio 
-    from cosmos_sdk.client.lcd import AsyncLCDClient
-    from cosmos_sdk.key.mnemonic import MnemonicKey
-    from cosmos_sdk.core import Coins
+    import asyncio
+    from terra_sdk.client.lcd.api.tx import CreateTxOptions
+    from terra_sdk.client.lcd import AsyncLCDClient
+    from terra_sdk.key.mnemonic import MnemonicKey
+    from terra_sdk.core import Coins
 
     mk = MnemonicKey()
     recipient = "terra1..."
@@ -62,7 +63,9 @@ are also asychronous and therefore must be awaited.
             wallet = terra.wallet(mk)
             account_number = await wallet.account_number()
             tx = await wallet.create_and_sign_tx(
-                msgs=[MsgSend(wallet.key.acc_address, recipient, Coins(uluna=10202))]
+                CreateTxOptions(
+                    msgs=[MsgSend(wallet.key.acc_address, recipient, Coins(uluna=10202))]
+                )
             )
     
     asyncio.get_event_loop().run_until_complete(main())
@@ -79,7 +82,7 @@ for more performance. For example:
     import asyncio
     import uvloop
 
-    from cosmos_sdk.client.lcd import AsyncLCDClient
+    from terra_sdk.client.lcd import AsyncLCDClient
 
     async def main():
         async with AsyncLCDClient("https://lcd.terra.dev", "columbus-5") as terra:

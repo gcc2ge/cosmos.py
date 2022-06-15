@@ -4,16 +4,16 @@ import copy
 from datetime import datetime
 
 import attr
-from cosmos_proto.cosmos.staking.v1beta1 import BondStatus
-from cosmos_proto.cosmos.staking.v1beta1 import Commission as Commission_pb
-from cosmos_proto.cosmos.staking.v1beta1 import CommissionRates as CommissionRates_pb
-from cosmos_proto.cosmos.staking.v1beta1 import Description as Description_pb
-from cosmos_proto.cosmos.staking.v1beta1 import Validator as Validator_pb
 from dateutil import parser
+from terra_proto.cosmos.staking.v1beta1 import BondStatus
+from terra_proto.cosmos.staking.v1beta1 import Commission as Commission_pb
+from terra_proto.cosmos.staking.v1beta1 import CommissionRates as CommissionRates_pb
+from terra_proto.cosmos.staking.v1beta1 import Description as Description_pb
+from terra_proto.cosmos.staking.v1beta1 import Validator as Validator_pb
 
 from cosmos_sdk.core import Dec, ValAddress, ValConsPubKey
 from cosmos_sdk.util.converter import to_isoformat
-from cosmos_sdk.util.json import JSONSerializable, dict_to_data
+from cosmos_sdk.util.json import JSONSerializable
 
 __all__ = ["CommissionRates", "Commission", "Description", "Validator", "BondStatus"]
 
@@ -38,6 +38,13 @@ class CommissionRates(JSONSerializable):
             "max_change_rate": str(self.max_change_rate),
         }
 
+    def to_data(self) -> dict:
+        return {
+            "rate": self.rate.to_data(),
+            "max_rate": self.max_rate.to_data(),
+            "max_change_rate": self.max_change_rate.to_data(),
+        }
+
     @classmethod
     def from_data(cls, data: dict) -> CommissionRates:
         return cls(
@@ -46,19 +53,19 @@ class CommissionRates(JSONSerializable):
             max_change_rate=data["max_change_rate"],
         )
 
-    @classmethod
-    def from_proto(cls, proto: CommissionRates_pb) -> CommissionRates:
-        return cls(
-            rate=Dec(proto.rate),
-            max_rate=Dec(proto.max_rate),
-            max_change_rate=Dec(proto.max_change_rate),
-        )
-
     def to_proto(self) -> CommissionRates_pb:
         return CommissionRates_pb(
             rate=str(self.rate),
             max_rate=str(self.max_rate),
             max_change_rate=str(self.max_change_rate),
+        )
+
+    @classmethod
+    def from_proto(cls, proto: CommissionRates_pb) -> CommissionRates:
+        return cls(
+            rate=proto.rate,
+            max_rate=proto.max_rate,
+            max_change_rate=proto.max_change_rate,
         )
 
 
@@ -78,11 +85,17 @@ class Commission(JSONSerializable):
             "update_time": to_isoformat(self.update_time),
         }
 
+    def to_amino(self) -> dict:
+        return {
+            "commission_rates": self.commission_rates.to_data(),
+            "update_time": to_isoformat(self.update_time),
+        }
+
     @classmethod
     def from_data(cls, data: dict) -> Commission:
         return cls(
             commission_rates=CommissionRates.from_data(data["commission_rates"]),
-            update_time=data["update_time"],
+            update_time=parser.parse(data["update_time"]),
         )
 
     def to_proto(self) -> Commission_pb:
@@ -122,6 +135,15 @@ class Description(JSONSerializable):
             "security_contact": self.security_contact,
         }
 
+    def to_data(self) -> dict:
+        return {
+            "moniker": self.moniker,
+            "identity": self.identity,
+            "website": self.website,
+            "details": self.details,
+            "security_contact": self.security_contact,
+        }
+
     @classmethod
     def from_data(cls, data) -> Description:
         return cls(
@@ -130,16 +152,6 @@ class Description(JSONSerializable):
             data.get("website"),
             data.get("details"),
             data.get("security_contact"),
-        )
-
-    @classmethod
-    def from_proto(cls, proto: Description_pb) -> Description:
-        return cls(
-            proto.moniker,
-            proto.identity,
-            proto.website,
-            proto.details,
-            proto.security_contact,
         )
 
     def to_proto(self) -> Description_pb:
@@ -204,20 +216,13 @@ class Validator(JSONSerializable):
             "min_self_delegation": str(self.min_self_delegation),
         }
 
-    def to_data(self) -> dict:
-        d = copy.deepcopy(self.__dict__)
-        d["min_self_delegation"] = str(d["min_self_delegation"])
-        d["tokens"] = str(d["tokens"])
-        d["unbonding_height"] = str(d["unbonding_height"])
-        return dict_to_data(d)
-
     @classmethod
     def from_data(cls, data: dict) -> Validator:
         return cls(
             operator_address=data["operator_address"],
             consensus_pubkey=data["consensus_pubkey"],
             jailed=data.get("jailed"),
-            status=data["status"],
+            status=BondStatus.from_string(data["status"]),
             tokens=data["tokens"],
             delegator_shares=data["delegator_shares"],
             description=Description.from_data(data["description"]),

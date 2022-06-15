@@ -5,13 +5,14 @@ from __future__ import annotations
 __all__ = ["PolicyConstraints"]
 
 import attr
-from cosmos_proto.terra.treasury.v1beta1 import PolicyConstraints as PolicyConstraints_pb
+from terra_proto.terra.treasury.v1beta1 import PolicyConstraints as PolicyConstraints_pb
 
 from cosmos_sdk.core import Coin, Dec
+from cosmos_sdk.util.json import JSONSerializable
 
 
 @attr.s
-class PolicyConstraints:
+class PolicyConstraints(JSONSerializable):
     """Contains information about tax reward or reward weight
     policy constraints.
     """

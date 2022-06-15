@@ -1,9 +1,9 @@
 import base64
 import copy
-from typing import List, Optional, Sequence, Union
+from typing import List, Optional
 
 import attr
-from cosmos_proto.cosmos.tx.v1beta1 import SimulateResponse as SimulateResponse_pb
+from multidict import CIMultiDict
 
 from cosmos_sdk.core import AccAddress, Coins, Dec, Numeric, PublicKey
 from cosmos_sdk.core.broadcast import (
@@ -11,43 +11,85 @@ from cosmos_sdk.core.broadcast import (
     BlockTxBroadcastResult,
     SyncTxBroadcastResult,
 )
+from cosmos_sdk.core.fee import Fee
 from cosmos_sdk.core.msg import Msg
-from cosmos_sdk.core.tx import AuthInfo, Fee, SignerData, SignMode, Tx, TxBody, TxInfo
+from cosmos_sdk.core.tx import AuthInfo, SignerData, SignMode, Tx, TxBody, TxInfo
 from cosmos_sdk.util.hash import hash_amino
 from cosmos_sdk.util.json import JSONSerializable
 
+from ..params import APIParams
 from ._base import BaseAsyncAPI, sync_bind
 
-__all__ = ["AsyncTxAPI", "TxAPI", "BroadcastOptions", "CreateTxOptions"]
+__all__ = [
+    "AsyncTxAPI",
+    "TxAPI",
+    "BroadcastOptions",
+    "CreateTxOptions",
+    "SignerOptions",
+]
 
 
 @attr.s
 class SignerOptions:
-    address: str = attr.ib()
+    """SignerOptions specifies infomations about signers
+    Args:
+        address (AccAddress): address of the signer
+        sequence (int, optional): nonce of the messages from the signer
+        public_key (PublicKey, optional): signer's PublicKey
+    """
+
+    address: AccAddress = attr.ib()
     sequence: Optional[int] = attr.ib(default=None)
     public_key: Optional[PublicKey] = attr.ib(default=None)
 
 
 @attr.s
 class CreateTxOptions:
-    msgs: Sequence[Msg] = attr.ib()
+    """
+
+    Args:
+        msgs (List[Msg]): list of messages to include
+        fee (Optional[Fee], optional): transaction fee. If ``None``, will be estimated.
+            See more on `fee estimation`_.
+        memo (str, optional): optional short string to include with transaction.
+        gas (str, optional): gas limit to set per-transaction; set to "auto" to calculate sufficient gas automatically
+        gas_prices (Coins.Input, optional): gas prices for fee estimation.
+        gas_adjustment (Numeric.Input, optional): gas adjustment for fee estimation.
+        fee_denoms (List[str], optional): list of denoms to use for fee after estimation.
+        account_number (int, optional): account number (overrides blockchain query if
+            provided)
+        sequence (int, optional): sequence (overrides blockchain qu ery if provided)
+        timeout_height (int, optional):  specifies a block timeout height to prevent the tx from being committed past a certain height.
+        sign_mode: (SignMode, optional): SignMode.SIGN_MODE_DIRECT by default. multisig needs SignMode.SIGN_MODE_LEGACY_AMINO_JSON.
+    """
+
+    msgs: List[Msg] = attr.ib()
     fee: Optional[Fee] = attr.ib(default=None)
     memo: Optional[str] = attr.ib(default=None)
     gas: Optional[str] = attr.ib(default=None)
-    gas_prices: Optional[Coins] = attr.ib(default=None)
-    # FIXME: is it okay with 0 bye default?
-    gas_adjustment: Optional[Numeric.Input] = attr.ib(default=0, converter=Numeric.parse)
-    fee_denoms: Optional[Sequence[str]] = attr.ib(default=None)
+    gas_prices: Optional[Coins.Input] = attr.ib(default=None)
+    gas_adjustment: Optional[Numeric.Output] = attr.ib(
+        default=0, converter=Numeric.parse
+    )
+    fee_denoms: Optional[List[str]] = attr.ib(default=None)
     account_number: Optional[int] = attr.ib(default=None)
     sequence: Optional[int] = attr.ib(default=None)
     timeout_height: Optional[int] = attr.ib(default=None)
-    sign_mode: Optional[SignMode] = attr.ib(default=SignMode.SIGN_MODE_DIRECT)
+    sign_mode: Optional[SignMode] = attr.ib(default=None)
 
 
 @attr.s
 class BroadcastOptions:
     sequences: Optional[List[int]] = attr.ib()
     fee_granter: Optional[AccAddress] = attr.ib(default=None)
+
+
+""" deprecated
+@attr.s
+class TxSearchOption:
+    key: str = attr.ib()
+    value: Union[str, int] = attr.ib()
+"""
 
 
 @attr.s
@@ -96,22 +138,17 @@ class AsyncTxAPI(BaseAsyncAPI):
             TxInfo: transaction info
         """
         res = await self._c._get(f"/cosmos/tx/v1beta1/txs/{tx_hash}")
-        return TxInfo.from_data(res)
+        return TxInfo.from_data(res["tx_response"])
 
-    async def create(self, signers: List[SignerOptions], options: CreateTxOptions) -> Tx:
+    async def create(
+        self, signers: List[SignerOptions], options: CreateTxOptions
+    ) -> Tx:
         """Create a new unsigned transaction, with helpful utilities such as lookup of
         chain ID, account number, sequence and fee estimation.
 
         Args:
-            sender (AccAddress): transaction sender's account address
-            msgs (List[Msg]): list of messages to include
-            fee (Optional[Fee], optional): fee to use (estimates if empty).
-            memo (str, optional): memo to use. Defaults to "".
-            gas_prices (Optional[Coins.Input], optional): gas prices for fee estimation.
-            gas_adjustment (Optional[Numeric.Input], optional): gas adjustment for fee estimation.
-            fee_denoms (Optional[List[str]], optional): list of denoms to use for gas fee when estimating.
-            account_number (Optional[int], optional): account number to use.
-            sequence (Optional[int], optional): sequence number to use.
+            signers (List[SignerOptions]): options about signers
+            options (CreateTxOptions): options about creating a tx
 
         Returns:
             Tx: unsigned tx
@@ -119,30 +156,34 @@ class AsyncTxAPI(BaseAsyncAPI):
 
         opt = copy.deepcopy(options)
 
-        signerData: List[SignerData] = []
+        signer_data: List[SignerData] = []
         for signer in signers:
             seq = signer.sequence
             pubkey = signer.public_key
 
             if seq is None or pubkey is None:
-                acc = await BaseAsyncAPI._try_await(self._c.auth.account_info(signer.address))
+                acc = await BaseAsyncAPI._try_await(
+                    self._c.auth.account_info(signer.address)
+                )
                 if seq is None:
                     seq = acc.get_sequence()
                 if pubkey is None:
-                    pubkey = acc.get_pubkey()
-            signerData.append(SignerData(seq, pubkey))
+                    pubkey = acc.get_public_key()
+            signer_data.append(SignerData(seq, pubkey))
 
         # create the fake fee
         if opt.fee is None:
-            opt.fee = await BaseAsyncAPI._try_await(self.estimate_fee(signerData, opt))
+            opt.fee = await BaseAsyncAPI._try_await(self.estimate_fee(signer_data, opt))
 
         return Tx(
             TxBody(opt.msgs, opt.memo or "", opt.timeout_height or 0),
             AuthInfo([], opt.fee),
-            "",
+            [],
         )
 
-    async def estimate_fee(self, signers: List[SignerOptions], options: CreateTxOptions) -> Fee:
+    async def estimate_fee(
+        self, signers: List[SignerOptions], options: CreateTxOptions
+    ) -> Fee:
         """Estimates the proper fee to apply by simulating it within the node.
 
         Args:
@@ -160,8 +201,9 @@ class AsyncTxAPI(BaseAsyncAPI):
         if gas_prices:
             gas_prices_coins = Coins(gas_prices)
             if options.fee_denoms:
+                _fee_denoms = options.fee_denoms if options.fee_denoms else ["uusd"]
                 gas_prices_coins = gas_prices_coins.filter(
-                    lambda c: c.denom in options.fee_denoms
+                    lambda c: c.denom in _fee_denoms
                 )
         tx_body = TxBody(messages=options.msgs, memo=options.memo or "")
         emptyCoins = Coins()
@@ -172,43 +214,37 @@ class AsyncTxAPI(BaseAsyncAPI):
         tx.append_empty_signatures(signers)
 
         gas = options.gas
-        if gas is None or gas == "auto" or gas == 0:
+        if gas is None or gas == "auto" or int(gas) == 0:
             opt = copy.deepcopy(options)
             opt.gas_adjustment = gas_adjustment
-            gas = str(await self.estimate_gas(tx, opt))
+            gas = str(await super()._try_await(self.estimate_gas(tx, opt)))
 
-        tax_amount = await self.compute_tax(tx)
         fee_amount = (
-            tax_amount.add(gas_prices_coins.mul(gas).to_int_coins())
+            gas_prices_coins.mul(gas).to_int_ceil_coins()
             if gas_prices_coins
-            else tax_amount
+            else Coins.from_str("0uusd")
         )
-
-        # if options.account_number is None or options.sequence is None:
-        #     account = await BaseAsyncAPI._try_await(self._c.auth.account_info(sender))
-        #     if options.account_number is None:
-        #         account_number = account.account_number
-        #     if options.sequence is None:
-        #         sequence = account.sequence
 
         return Fee(Numeric.parse(gas), fee_amount, "", "")
 
     async def estimate_gas(self, tx: Tx, options: Optional[CreateTxOptions]) -> int:
         gas_adjustment = options.gas_adjustment if options else self._c.gas_adjustment
 
-        res = await self._c._post("/cosmos/tx/v1beta1/simulate", {"tx_bytes": self.encode(tx)})
+        res = await self._c._post(
+            "/cosmos/tx/v1beta1/simulate",
+            {"tx_bytes": await super()._try_await(self.encode(tx))},
+        )
         simulated = SimulateResponse.from_data(res)
 
         return int(Dec(gas_adjustment).mul(simulated.gas_info["gas_used"]))
 
-    async def compute_tax(self, tx: Tx) -> Coins:
-        res = await self._c._post(
-            "/terra/tx/v1beta1/compute_tax", {"tx_bytes": self.encode(tx)}
-        )
-        return Coins.from_data(res.get("tax_amount"))
+    async def encode(self, tx: Tx) -> str:
+        """Encode a Tx to base64 encoded proto string"""
+        return base64.b64encode(bytes(tx.to_proto())).decode()
 
-    def encode(self, tx: Tx, options: BroadcastOptions = None) -> str:
-        return base64.b64encode(tx.to_proto().SerializeToString()).decode()
+    async def decode(self, tx: str) -> Tx:
+        """Decode base64 encoded proto string to a Tx"""
+        return Tx.from_bytes(base64.b64decode(tx))
 
     async def hash(self, tx: Tx) -> str:
         """Compute hash for a transaction.
@@ -219,12 +255,14 @@ class AsyncTxAPI(BaseAsyncAPI):
         Returns:
             str: transaction hash
         """
-        amino = await self.encode(tx)
+        amino = self.encode(tx)
         return hash_amino(amino)
 
-    async def _broadcast(self, tx: Tx, mode: str, options: BroadcastOptions = None) -> dict:
-        data = {"tx_bytes": self.encode(tx), "mode": mode}
-        return (await self._c._post("/cosmos/tx/v1beta1/txs", data))["tx_response"]
+    async def _broadcast(
+        self, tx: Tx, mode: str, options: BroadcastOptions = None
+    ) -> dict:
+        data = {"tx_bytes": await super()._try_await(self.encode(tx)), "mode": mode}
+        return await self._c._post("/cosmos/tx/v1beta1/txs", data)  # , raw=True)
 
     async def broadcast_sync(
         self, tx: Tx, options: BroadcastOptions = None
@@ -239,6 +277,7 @@ class AsyncTxAPI(BaseAsyncAPI):
             SyncTxBroadcastResult: result
         """
         res = await self._broadcast(tx, "BROADCAST_MODE_SYNC", options)
+        res = res.get("tx_response")
         return SyncTxBroadcastResult(
             txhash=res.get("txhash"),
             raw_log=res.get("raw_log"),
@@ -259,6 +298,7 @@ class AsyncTxAPI(BaseAsyncAPI):
             AsyncTxBroadcastResult: result
         """
         res = await self._broadcast(tx, "BROADCAST_MODE_ASYNC", options)
+        res = res.get("tx_response")
         return AsyncTxBroadcastResult(
             txhash=res.get("txhash"),
         )
@@ -288,17 +328,55 @@ class AsyncTxAPI(BaseAsyncAPI):
             codespace=res.get("codespace"),
         )
 
-    async def search(self, options: dict = {}) -> dict:
-        """Searches for transactions given critera.
+    async def search(
+        self, events: List[list], params: Optional[APIParams] = None
+    ) -> dict:
+        """Searches for transactions given criteria.
 
         Args:
-            options (dict, optional): dictionary containing options. Defaults to {}.
+            events (dict): dictionary containing options
+            params (APIParams): optional parameters
 
         Returns:
             dict: transaction search results
         """
-        res = await self._c._get("/cosmos/tx/v1beta1/txs", options, raw=True)
-        return res
+
+        actual_params = CIMultiDict()
+
+        for event in events:
+            if event[0] == "tx.height":
+                actual_params.add("events", f"{event[0]}={event[1]}")
+            else:
+                actual_params.add("events", f"{event[0]}='{event[1]}'")
+        if params:
+            for p in params:
+                actual_params.add(p, params[p])
+
+        res = await self._c._get("/cosmos/tx/v1beta1/txs", actual_params)
+        return {
+            "txs": [TxInfo.from_data(tx) for tx in res.get("tx_responses")],
+            "pagination": res.get("pagination"),
+        }
+
+    async def tx_infos_by_height(self, height: Optional[int] = None) -> List[TxInfo]:
+        """Fetches information for an included transaction given block height or latest
+
+        Args:
+            height (int, optional): height to lookup. latest if height is None.
+
+        Returns:
+            List[TxInfo]: transaction info
+        """
+        if height is None:
+            x = "latest"
+        else:
+            x = height
+
+        res = await self._c._get(f"/cosmos/base/tendermint/v1beta1/blocks/{x}")
+
+        txs = res.get("block").get("data").get("txs")
+        hashes = [hash_amino(tx) for tx in txs]
+        return [await BaseAsyncAPI._try_await(self.tx_info(tx_hash)) for tx_hash in hashes]
 
 
 class TxAPI(AsyncTxAPI):
@@ -315,24 +393,32 @@ class TxAPI(AsyncTxAPI):
     create.__doc__ = AsyncTxAPI.create.__doc__
 
     @sync_bind(AsyncTxAPI.estimate_fee)
-    def estimate_fee(self, signers: List[SignerOptions], options: CreateTxOptions) -> Fee:
-        pass
-
-    @sync_bind(AsyncTxAPI.estimate_gas)
-    def estimate_gas(self, tx: Tx, options: Optional[CreateTxOptions]) -> SimulateResponse:
-        pass
-
-    @sync_bind(AsyncTxAPI.compute_tax)
-    def compute_tax(self, tx: Tx) -> Coins:
+    def estimate_fee(
+        self, signers: List[SignerOptions], options: CreateTxOptions
+    ) -> Fee:
         pass
 
     estimate_fee.__doc__ = AsyncTxAPI.estimate_fee.__doc__
 
+    @sync_bind(AsyncTxAPI.estimate_gas)
+    def estimate_gas(
+        self, tx: Tx, options: Optional[CreateTxOptions]
+    ) -> SimulateResponse:
+        pass
+
+    estimate_gas.__doc__ = AsyncTxAPI.estimate_gas.__doc__
+
     @sync_bind(AsyncTxAPI.encode)
-    def encode(self, tx: Tx, options: BroadcastOptions = None) -> str:
+    def encode(self, tx: Tx) -> str:
         pass
 
     encode.__doc__ = AsyncTxAPI.encode.__doc__
+
+    @sync_bind(AsyncTxAPI.decode)
+    def decode(self, tx: str) -> Tx:
+        pass
+
+    decode.__doc__ = AsyncTxAPI.decode.__doc__
 
     @sync_bind(AsyncTxAPI.hash)
     def hash(self, tx: Tx) -> str:
@@ -341,7 +427,9 @@ class TxAPI(AsyncTxAPI):
     hash.__doc__ = AsyncTxAPI.hash.__doc__
 
     @sync_bind(AsyncTxAPI.broadcast_sync)
-    def broadcast_sync(self, tx: Tx, options: BroadcastOptions = None) -> SyncTxBroadcastResult:
+    def broadcast_sync(
+        self, tx: Tx, options: BroadcastOptions = None
+    ) -> SyncTxBroadcastResult:
         pass
 
     broadcast_sync.__doc__ = AsyncTxAPI.broadcast_sync.__doc__
@@ -355,13 +443,21 @@ class TxAPI(AsyncTxAPI):
     broadcast_async.__doc__ = AsyncTxAPI.broadcast_async.__doc__
 
     @sync_bind(AsyncTxAPI.broadcast)
-    def broadcast(self, tx: Tx, options: BroadcastOptions = None) -> BlockTxBroadcastResult:
+    def broadcast(
+        self, tx: Tx, options: BroadcastOptions = None
+    ) -> BlockTxBroadcastResult:
         pass
 
     broadcast.__doc__ = AsyncTxAPI.broadcast.__doc__
 
     @sync_bind(AsyncTxAPI.search)
-    def search(self, options: dict = {}) -> dict:
+    def search(self, events: List[list], params: Optional[APIParams] = None) -> dict:
         pass
 
     search.__doc__ = AsyncTxAPI.search.__doc__
+
+    @sync_bind(AsyncTxAPI.tx_infos_by_height)
+    def tx_infos_by_height(self, height: Optional[int] = None) -> List[TxInfo]:
+        pass
+
+    tx_infos_by_height.__doc__ = AsyncTxAPI.tx_infos_by_height.__doc__

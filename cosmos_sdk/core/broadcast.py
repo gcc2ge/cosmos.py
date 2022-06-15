@@ -52,7 +52,7 @@ class BlockTxBroadcastResult(JSONSerializable):
 
 @attr.s
 class SyncTxBroadcastResult(JSONSerializable):
-    """Data object that contains the response result from node after transaction
+    """Data object that contains the response result from node after transactionco
     has been broadcasted with the ``sync`` broadcast mode."""
 
     txhash: str = attr.ib()
@@ -78,6 +78,6 @@ class AsyncTxBroadcastResult(JSONSerializable):
     """Transaction hash."""
 
 
-def is_tx_error(result: Union[BlockTxBroadcastResult, SyncTxBroadcastResult]) -> bool:
+def is_tx_error(result: Union[BlockTxBroadcastResult, SyncTxBroadcastResult]):
     """Returns whether the transaction failed."""
-    return bool(result.code)
+    return result.code != 0

@@ -16,22 +16,22 @@ Addresses
 AccAddress
 ^^^^^^^^^^
 
-.. autoclass:: cosmos_sdk.core.bech32.AccAddress
+.. autoclass:: terra_sdk.core.bech32.AccAddress
     :members:
 
-.. autofunction:: cosmos_sdk.core.bech32.is_acc_address
+.. autofunction:: terra_sdk.core.bech32.is_acc_address
 
-.. autofunction:: cosmos_sdk.core.bech32.to_acc_address
+.. autofunction:: terra_sdk.core.bech32.to_acc_address
 
 ValAddress
 ^^^^^^^^^^
 
-.. autoclass:: cosmos_sdk.core.bech32.ValAddress
+.. autoclass:: terra_sdk.core.bech32.ValAddress
     :members:
 
-.. autofunction:: cosmos_sdk.core.bech32.is_val_address
+.. autofunction:: terra_sdk.core.bech32.is_val_address
 
-.. autofunction:: cosmos_sdk.core.bech32.to_val_address
+.. autofunction:: terra_sdk.core.bech32.to_val_address
 
 
 
@@ -41,20 +41,20 @@ PubKeys
 AccPubKey
 ^^^^^^^^^
 
-.. autoclass:: cosmos_sdk.core.bech32.AccPubKey
+.. autoclass:: terra_sdk.core.bech32.AccPubKey
     :members:
 
-.. autofunction:: cosmos_sdk.core.bech32.is_acc_pubkey
+.. autofunction:: terra_sdk.core.bech32.is_acc_pubkey
 
-.. autofunction:: cosmos_sdk.core.bech32.to_acc_pubkey
+.. autofunction:: terra_sdk.core.bech32.to_acc_pubkey
 
 ValPubKey
 ^^^^^^^^^
 
-.. autoclass:: cosmos_sdk.core.bech32.ValPubKey
+.. autoclass:: terra_sdk.core.bech32.ValPubKey
     :members:
 
-.. autofunction:: cosmos_sdk.core.bech32.is_acc_pubkey
+.. autofunction:: terra_sdk.core.bech32.is_acc_pubkey
 
-.. autofunction:: cosmos_sdk.core.bech32.to_acc_pubkey
+.. autofunction:: terra_sdk.core.bech32.to_acc_pubkey
 

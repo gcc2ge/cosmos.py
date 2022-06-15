@@ -3,7 +3,7 @@ from cosmos_sdk.core.oracle import MsgAggregateExchangeRateVote, MsgDelegateFeed
 
 def test_deserializes_msg_delegate_feed_consent_examples(load_msg_examples):
     examples = load_msg_examples(
-        MsgDelegateFeedConsent.type, "./MsgDelegateFeedConsent.data.json"
+        MsgDelegateFeedConsent.type_url, "./MsgDelegateFeedConsent.data.json"
     )
     for example in examples:
         assert MsgDelegateFeedConsent.from_data(example).to_data() == example
@@ -21,4 +21,6 @@ def test_msg_aggregate_exchange_rate_vote_get_aggregate_vote_hash(load_msg_examp
         "terravaloper1krj7amhhagjnyg2tkkuh6l0550y733jnjnnlzy",
     )
 
-    assert msg.get_aggregate_prevote().hash == "7929908433e7399845fa60f9ef70ef7f2bb8f01b"
+    assert (
+        msg.get_aggregate_prevote().hash == "7929908433e7399845fa60f9ef70ef7f2bb8f01b"
+    )

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import attr
-from cosmos_proto.cosmos.slashing.v1beta1 import MsgUnjail as MsgUnjail_pb
+from terra_proto.cosmos.slashing.v1beta1 import MsgUnjail as MsgUnjail_pb
 
 from cosmos_sdk.core import ValAddress
 from cosmos_sdk.core.msg import Msg
@@ -22,9 +22,9 @@ class MsgUnjail(Msg):
     """"""
     type_url = "/cosmos.slashing.v1beta1.MsgUnjail"
     """"""
-    proto_msg = MsgUnjail_pb
-    """"""
     action = "unjail"
+    """"""
+    prototype = MsgUnjail_pb
     """"""
 
     address: ValAddress = attr.ib()
@@ -36,9 +36,9 @@ class MsgUnjail(Msg):
     def from_data(cls, data: dict) -> MsgUnjail:
         return cls(address=data["address"])
 
-    @classmethod
-    def from_proto(cls, proto: MsgUnjail_pb) -> MsgUnjail:
-        return cls(address=ValAddress(proto.validator_addr))
-
     def to_proto(self) -> MsgUnjail_pb:
         return MsgUnjail_pb(validator_addr=self.address)
+
+    @classmethod
+    def from_proto(cls, proto: MsgUnjail_pb) -> MsgUnjail:
+        return cls(address=proto.address)

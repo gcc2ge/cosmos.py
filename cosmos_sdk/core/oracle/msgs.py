@@ -2,23 +2,21 @@
 
 from __future__ import annotations
 
-import copy
 import hashlib
 
 import attr
-from cosmos_proto.terra.oracle.v1beta1 import (
+from terra_proto.terra.oracle.v1beta1 import (
     MsgAggregateExchangeRatePrevote as MsgAggregateExchangeRatePrevote_pb,
 )
-from cosmos_proto.terra.oracle.v1beta1 import (
+from terra_proto.terra.oracle.v1beta1 import (
     MsgAggregateExchangeRateVote as MsgAggregateExchangeRateVote_pb,
 )
-from cosmos_proto.terra.oracle.v1beta1 import (
+from terra_proto.terra.oracle.v1beta1 import (
     MsgDelegateFeedConsent as MsgDelegateFeedConsent_pb,
 )
 
 from cosmos_sdk.core import AccAddress, Coins, Dec, ValAddress
 from cosmos_sdk.core.msg import Msg
-from cosmos_sdk.util.json import dict_to_data
 
 __all__ = [
     "vote_hash",
@@ -75,9 +73,9 @@ class MsgDelegateFeedConsent(Msg):
     """"""
     type_url = "/terra.oracle.v1beta1.MsgDelegateFeedConsent"
     """"""
-    proto_msg = MsgDelegateFeedConsent_pb
-    """"""
     action = "delegatefeeder"
+    """"""
+    prototype = MsgDelegateFeedConsent_pb
     """"""
 
     operator: ValAddress = attr.ib()
@@ -93,12 +91,12 @@ class MsgDelegateFeedConsent(Msg):
     def from_data(cls, data: dict) -> MsgDelegateFeedConsent:
         return cls(operator=data["operator"], delegate=data["delegate"])
 
-    @classmethod
-    def from_proto(cls, proto: MsgDelegateFeedConsent_pb) -> MsgDelegateFeedConsent:
-        return cls(operator=ValAddress(proto.operator), delegate=AccAddress(proto.delegate))
-
     def to_proto(self) -> MsgDelegateFeedConsent_pb:
         return MsgDelegateFeedConsent_pb(operator=self.operator, delegate=self.delegate)
+
+    @classmethod
+    def from_proto(cls, proto: MsgDelegateFeedConsent_pb) -> MsgDelegateFeedConsent:
+        return cls(operator=proto.operator, delegate=proto.delegate)
 
 
 @attr.s
@@ -115,7 +113,7 @@ class MsgAggregateExchangeRatePrevote(Msg):
     """"""
     type_url = "/terra.oracle.v1beta1.MsgAggregateExchangeRatePrevote"
     """"""
-    proto_msg = MsgAggregateExchangeRatePrevote_pb
+    prototype = MsgAggregateExchangeRatePrevote_pb
     """"""
 
     hash: str = attr.ib()
@@ -140,20 +138,19 @@ class MsgAggregateExchangeRatePrevote(Msg):
             validator=data["validator"],
         )
 
-    @classmethod
-    def from_proto(
-        cls,
-        proto: MsgAggregateExchangeRatePrevote_pb,
-    ) -> MsgAggregateExchangeRatePrevote:
-        return cls(
-            hash=proto.hash,
-            feeder=AccAddress(proto.feeder),
-            validator=ValAddress(proto.validator),
-        )
-
     def to_proto(self) -> MsgAggregateExchangeRatePrevote_pb:
         return MsgAggregateExchangeRatePrevote_pb(
             hash=self.hash, feeder=self.feeder, validator=self.validator
+        )
+
+    @classmethod
+    def from_proto(
+        cls, proto: MsgAggregateExchangeRatePrevote_pb
+    ) -> MsgAggregateExchangeRatePrevote:
+        return cls(
+            hash=proto.hash,
+            feeder=proto.feeder,
+            validator=proto.validator,
         )
 
 
@@ -172,7 +169,7 @@ class MsgAggregateExchangeRateVote(Msg):
     """"""
     type_url = "/terra.oracle.v1beta1.MsgAggregateExchangeRateVote"
     """"""
-    proto_msg = MsgAggregateExchangeRateVote_pb
+    prototype = MsgAggregateExchangeRateVote_pb
     """"""
 
     exchange_rates: Coins = attr.ib(converter=Coins)
@@ -191,25 +188,27 @@ class MsgAggregateExchangeRateVote(Msg):
             },
         }
 
-    @classmethod
-    def from_data(cls, data: dict) -> MsgAggregateExchangeRateVote:
-        return cls(
-            exchange_rates=Coins.from_str(data["exchange_rates"]),
-            salt=data["salt"],
-            feeder=data["feeder"],
-            validator=data["validator"],
-        )
+    def to_data(self) -> dict:
+        return {
+            "@type": self.type_url,
+            "exchange_rates": self.exchange_rates.to_dec_coins().to_data(),
+            "salt": self.salt,
+            "feeder": self.feeder,
+            "validator": self.validator
+        }
 
     @classmethod
-    def from_proto(
-        cls,
-        proto: MsgAggregateExchangeRateVote_pb,
-    ) -> MsgAggregateExchangeRateVote:
+    def from_data(cls, data: dict) -> MsgAggregateExchangeRateVote:
+        rates = data.get("exchange_rates")
+        if type(rates) is str:
+            rates = Coins.from_str(rates)
+        else:
+            rates = Coins.from_data(rates)
         return cls(
-            exchange_rates=Coins.from_str(proto.exchange_rates),
-            salt=proto.salt,
-            feeder=AccAddress(proto.feeder),
-            validator=ValAddress(proto.validator),
+            exchange_rates=rates,
+            salt=data.get("salt"),
+            feeder=data.get("feeder"),
+            validator=data.get("validator"),
         )
 
     def to_proto(self) -> MsgAggregateExchangeRateVote_pb:
@@ -218,6 +217,17 @@ class MsgAggregateExchangeRateVote(Msg):
             salt=self.salt,
             feeder=self.feeder,
             validator=self.validator,
+        )
+
+    @classmethod
+    def from_proto(
+        cls, proto: MsgAggregateExchangeRateVote_pb
+    ) -> MsgAggregateExchangeRateVote:
+        return cls(
+            exchange_rates=Coins.from_str(proto.exchange_rates),
+            salt=proto.salt,
+            feeder=proto.feeder,
+            validator=proto.validator,
         )
 
     def get_aggregate_vote_hash(self) -> str:

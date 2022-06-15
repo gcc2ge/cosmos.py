@@ -10,13 +10,11 @@ from cosmos_sdk.util.contract import get_code_id
 
 def main():
     terra = LCDClient(
-        url="https://bombay-lcd.terra.dev/",
+        url="https://lcd.terra.dev",
         chain_id="columbus-5",
     )
 
-    result = terra.bank.balance(address="terra1x46rqay4d3cssq8gxxvqz8xt6nwlz4td20k38v")
-    print(result)
-    result = terra.treasury.parameters()
+    result = terra.tx.tx_infos_by_height(None)
     print(result)
 
 

@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from asyncio import AbstractEventLoop, get_event_loop
 from json import JSONDecodeError
-from typing import Optional, Union
+from typing import List, Optional, Union
 
-import attr
 import nest_asyncio
 from aiohttp import ClientSession
+from multidict import CIMultiDict
 
 from cosmos_sdk.core import Coins, Dec, Numeric
 from cosmos_sdk.exceptions import LCDResponseError
@@ -18,6 +18,7 @@ from ..api.auth import AsyncAuthAPI, AuthAPI
 from ..api.authz import AsyncAuthzAPI, AuthzAPI
 from ..api.bank import AsyncBankAPI, BankAPI
 from ..api.distribution import AsyncDistributionAPI, DistributionAPI
+from ..api.feegrant import AsyncFeeGrantAPI, FeeGrantAPI
 from ..api.gov import AsyncGovAPI, GovAPI
 from ..api.ibc import AsyncIbcAPI, IbcAPI
 from ..api.ibc_transfer import AsyncIbcTransferAPI, IbcTransferAPI
@@ -31,8 +32,19 @@ from ..api.terra.treasury import AsyncTreasuryAPI, TreasuryAPI
 from ..api.tx import AsyncTxAPI, TxAPI
 from ..api.terra.wasm import AsyncWasmAPI, WasmAPI
 from ..lcdutils import AsyncLCDUtils, LCDUtils
-from ..params import APIParams, PaginationOptions
+from ..params import APIParams
 from ..wallet import AsyncWallet, Wallet
+
+
+def get_default(chain_id: str) -> [Coins, Numeric]:
+    if chain_id == "columbus-5":
+        return [Coins.from_str("0.15uusd"), Numeric.parse(1.75)]
+    if chain_id == "bombay-12":
+        return [Coins.from_str("0.15uusd"), Numeric.parse(1.75)]
+    if chain_id == "localterra":
+        return [Coins.from_str("0.15uusd"), Numeric.parse(1.75)]
+
+    raise ValueError("chain_id is invalid")
 
 
 class AsyncLCDClient:
@@ -49,17 +61,22 @@ class AsyncLCDClient:
             loop = get_event_loop()
         self.loop = loop
         if _create_session:
-            self.session = ClientSession(headers={"Accept": "application/json"}, loop=self.loop)
+            self.session = ClientSession(
+                headers={"Accept": "application/json"}, loop=self.loop
+            )
 
         self.chain_id = chain_id
         self.url = url
-        self.gas_prices = Coins(gas_prices)
-        self.gas_adjustment = gas_adjustment
         self.last_request_height = None
+
+        default_price, default_adjustment = get_default(chain_id)
+        self.gas_prices = Coins(gas_prices) if gas_prices else default_price
+        self.gas_adjustment = gas_adjustment if gas_adjustment else default_adjustment
 
         self.auth = AsyncAuthAPI(self)
         self.bank = AsyncBankAPI(self)
         self.distribution = AsyncDistributionAPI(self)
+        self.feegrant = AsyncFeeGrantAPI(self)
         self.gov = AsyncGovAPI(self)
         self.market = AsyncMarketAPI(self)
         self.mint = AsyncMintAPI(self)
@@ -86,22 +103,33 @@ class AsyncLCDClient:
     async def _get(
         self,
         endpoint: str,
-        params: Optional[Union[APIParams, list, dict]] = None,  # , raw: bool = False
+        params: Optional[Union[APIParams, CIMultiDict, list, dict]] = None,
+        # raw: bool = False
     ):
-        if params and (type(params) is not dict and type(params) is not list):
+        if (
+            params
+            and hasattr(params, "to_dict")
+            and callable(getattr(params, "to_dict"))
+        ):
             params = params.to_dict()
 
-        async with self.session.get(urljoin(self.url, endpoint), params=params) as response:
+        async with self.session.get(
+            urljoin(self.url, endpoint), params=params
+        ) as response:
             try:
                 result = await response.json(content_type=None)
             except JSONDecodeError:
                 raise LCDResponseError(message=str(response.reason), response=response)
             if not 200 <= response.status < 299:
                 raise LCDResponseError(message=str(result), response=response)
-        self.last_request_height = result.get("height")
+        self.last_request_height = (
+            result.get("height") if result else self.last_request_height
+        )
         return result  # if raw else result["result"]
 
-    async def _post(self, endpoint: str, data: Optional[dict] = None):  # , raw: bool = False
+    async def _post(
+        self, endpoint: str, data: Optional[dict] = None  # , raw: bool = False
+    ):
         async with self.session.post(
             urljoin(self.url, endpoint), json=data and dict_to_data(data)
         ) as response:
@@ -110,21 +138,43 @@ class AsyncLCDClient:
             except JSONDecodeError:
                 raise LCDResponseError(message=str(response.reason), response=response)
             if not 200 <= response.status < 299:
-                raise LCDResponseError(message=str(result), response=response)
-        self.last_request_height = result.get("height")
+                raise LCDResponseError(message=result.get("message"), response=response)
+        self.last_request_height = (
+            result.get("height") if result else self.last_request_height
+        )
         return result  # if raw else result["result"]
 
-    async def _search(self, params: list = []) -> dict:
-        """Searches for transactions given critera.
+    async def _search(
+        self,
+        events: List[list],
+        params: Optional[Union[APIParams, CIMultiDict, list, dict]] = None,
+        # raw: bool = False
+    ):
 
-        Args:
-            options (dict, optional): dictionary containing options. Defaults to {}.
+        actual_params = CIMultiDict()
 
-        Returns:
-            dict: transaction search results
-        """
-        res = await self._get("/cosmos/tx/v1beta1/txs", params)
-        return res
+        for event in events:
+            if event[0] == "tx.height":
+                actual_params.add("events", f"{event[0]}={event[1]}")
+            else:
+                actual_params.add("events", f"{event[0]}='{event[1]}'")
+        if params:
+            for p in params:
+                actual_params.add(p, params[p])
+
+        async with self.session.get(
+            urljoin(self.url, "/cosmos/tx/v1beta1/txs"), params=actual_params
+        ) as response:
+            try:
+                result = await response.json(content_type=None)
+            except JSONDecodeError:
+                raise LCDResponseError(message=str(response.reason), response=response)
+            if not 200 <= response.status < 299:
+                raise LCDResponseError(message=str(result), response=response)
+        self.last_request_height = (
+            result.get("height") if result else self.last_request_height
+        )
+        return result  # if raw else result["result"]
 
     async def __aenter__(self):
         return self
@@ -142,7 +192,7 @@ class LCDClient(AsyncLCDClient):
     chain_id: str
     """Chain ID of blockchain network connecting to."""
 
-    gas_prices: Coins
+    gas_prices: Coins.Input
     """Gas prices to use for automatic fee estimation."""
 
     gas_adjustment: Union[str, float, int, Dec]
@@ -152,52 +202,55 @@ class LCDClient(AsyncLCDClient):
     """Height of response of last-made made LCD request."""
 
     auth: AuthAPI
-    """:class:`AuthAPI<cosmos_sdk.client.lcd.api.auth.AuthAPI>`."""
+    """:class:`AuthAPI<terra_sdk.client.lcd.api.auth.AuthAPI>`."""
 
     bank: BankAPI
-    """:class:`BankAPI<cosmos_sdk.client.lcd.api.bank.BankAPI>`."""
+    """:class:`BankAPI<terra_sdk.client.lcd.api.bank.BankAPI>`."""
 
     distribution: DistributionAPI
-    """:class:`DistributionAPI<cosmos_sdk.client.lcd.api.distribution.DistributionAPI>`."""
+    """:class:`DistributionAPI<terra_sdk.client.lcd.api.distribution.DistributionAPI>`."""
 
     gov: GovAPI
-    """:class:`GovAPI<cosmos_sdk.client.lcd.api.gov.GovAPI>`."""
+    """:class:`GovAPI<terra_sdk.client.lcd.api.gov.GovAPI>`."""
+
+    feegrant: FeeGrantAPI
+    """:class:`FeeGrant<terra_sdk.client.lcd.api.feegrant.FeeGrantAPI>`."""
 
     market: MarketAPI
-    """:class:`MarketAPI<cosmos_sdk.client.lcd.api.market.MarketAPI>`."""
+    """:class:`MarketAPI<terra_sdk.client.lcd.api.market.MarketAPI>`."""
 
     mint: MintAPI
-    """:class:`MintAPI<cosmos_sdk.client.lcd.api.mint.MintAPI>`."""
+    """:class:`MintAPI<terra_sdk.client.lcd.api.mint.MintAPI>`."""
 
     authz: AuthzAPI
-    """:class:`AuthzAPI<cosmos_sdk.client.lcd.api.authz.AuthzAPI>`."""
+    """:class:`AuthzAPI<terra_sdk.client.lcd.api.authz.AuthzAPI>`."""
 
     oracle: OracleAPI
-    """:class:`OracleAPI<cosmos_sdk.client.lcd.api.oracle.OracleAPI>`."""
+    """:class:`OracleAPI<terra_sdk.client.lcd.api.oracle.OracleAPI>`."""
 
     slashing: SlashingAPI
-    """:class:`SlashingAPI<cosmos_sdk.client.lcd.api.slashing.SlashingAPI>`."""
+    """:class:`SlashingAPI<terra_sdk.client.lcd.api.slashing.SlashingAPI>`."""
 
     staking: StakingAPI
-    """:class:`StakingAPI<cosmos_sdk.client.lcd.api.staking.StakingAPI>`."""
+    """:class:`StakingAPI<terra_sdk.client.lcd.api.staking.StakingAPI>`."""
 
     tendermint: TendermintAPI
-    """:class:`TendermintAPI<cosmos_sdk.client.lcd.api.tendermint.TendermintAPI>`."""
+    """:class:`TendermintAPI<terra_sdk.client.lcd.api.tendermint.TendermintAPI>`."""
 
     treasury: TreasuryAPI
-    """:class:`TreasuryAPI<cosmos_sdk.client.lcd.api.treasury.TreasuryAPI>`."""
+    """:class:`TreasuryAPI<terra_sdk.client.lcd.api.treasury.TreasuryAPI>`."""
 
     wasm: WasmAPI
-    """:class:`WasmAPI<cosmos_sdk.client.lcd.api.wasm.WasmAPI>`."""
+    """:class:`WasmAPI<terra_sdk.client.lcd.api.wasm.WasmAPI>`."""
 
     tx: TxAPI
-    """:class:`TxAPI<cosmos_sdk.client.lcd.api.tx.TxAPI>`."""
+    """:class:`TxAPI<terra_sdk.client.lcd.api.tx.TxAPI>`."""
 
     ibc: IbcAPI
-    """:class:`IbcAPI<cosmos_sdk.client.lcd.api.ibc.IbcAPI>`."""
+    """:class:`IbcAPI<terra_sdk.client.lcd.api.ibc.IbcAPI>`."""
 
     ibc_transfer: IbcTransferAPI
-    """:class:`IbcTransferAPI<cosmos_sdk.client.lcd.api.ibc_transfer.IbcTransferAPI>`."""
+    """:class:`IbcTransferAPI<terra_sdk.client.lcd.api.ibc_transfer.IbcTransferAPI>`."""
 
     def __init__(
         self,
@@ -219,6 +272,7 @@ class LCDClient(AsyncLCDClient):
         self.bank = BankAPI(self)
         self.distribution = DistributionAPI(self)
         self.gov = GovAPI(self)
+        self.feegrant = FeeGrantAPI(self)
         self.market = MarketAPI(self)
         self.mint = MintAPI(self)
         self.authz = AuthzAPI(self)
@@ -255,7 +309,9 @@ class LCDClient(AsyncLCDClient):
     async def _get(self, *args, **kwargs):
         # session has to be manually created and torn down for each HTTP request in a
         # synchronous client
-        self.session = ClientSession(headers={"Accept": "application/json"}, loop=self.loop)
+        self.session = ClientSession(
+            headers={"Accept": "application/json"}, loop=self.loop
+        )
         try:
             result = await super()._get(*args, **kwargs)
         finally:
@@ -265,7 +321,9 @@ class LCDClient(AsyncLCDClient):
     async def _post(self, *args, **kwargs):
         # session has to be manually created and torn down for each HTTP request in a
         # synchronous client
-        self.session = ClientSession(headers={"Accept": "application/json"}, loop=self.loop)
+        self.session = ClientSession(
+            headers={"Accept": "application/json"}, loop=self.loop
+        )
         try:
             result = await super()._post(*args, **kwargs)
         finally:
@@ -275,7 +333,9 @@ class LCDClient(AsyncLCDClient):
     async def _search(self, *args, **kwargs):
         # session has to be manually created and torn down for each HTTP request in a
         # synchronous client
-        self.session = ClientSession(headers={"Accept": "application/json"}, loop=self.loop)
+        self.session = ClientSession(
+            headers={"Accept": "application/json"}, loop=self.loop
+        )
         try:
             result = await super()._search(*args, **kwargs)
         finally:

@@ -1,16 +1,12 @@
 from __future__ import annotations
 
-import re
-from typing import Union
-
 import attr
-from cosmos_proto.cosmos.gov.v1beta1 import Deposit as Deposit_pb
+from terra_proto.cosmos.gov.v1beta1 import Deposit as Deposit_pb
 
 from cosmos_sdk.core import AccAddress
 from cosmos_sdk.util.json import JSONSerializable
 
 from .coins import Coins
-from .numeric import Dec, Numeric
 
 
 @attr.s
@@ -31,13 +27,9 @@ class Deposit(JSONSerializable):
     def from_proto(cls, proto: Deposit_pb) -> Deposit:
         return cls(
             proposal_id=proto.proposal_id,
-            depositor=AccAddress(proto.depositor),
+            depositor=proto.depositor,
             amount=Coins.from_proto(proto.amount),
         )
-
-    @classmethod
-    def from_proto_bytes(cls, data: bytes) -> Deposit:
-        return cls.from_proto(Deposit_pb.FromString(data))
 
     def to_proto(self) -> Deposit_pb:
         return Deposit_pb(

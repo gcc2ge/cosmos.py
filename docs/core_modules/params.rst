@@ -4,5 +4,5 @@ Params
 Proposals
 ---------
 
-.. automodule:: cosmos_sdk.core.params.proposals
+.. automodule:: terra_sdk.core.params.proposals
     :members:

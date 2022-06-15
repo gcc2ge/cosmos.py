@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import attr
-from cosmos_proto.ibc.applications.transfer.v1 import MsgTransfer as MsgTransfer_pb
+from terra_proto.ibc.applications.transfer.v1 import MsgTransfer as MsgTransfer_pb
 
 from cosmos_sdk.core import AccAddress, Coin
 from cosmos_sdk.core.ibc.data import Height
@@ -29,21 +29,20 @@ class MsgTransfer(Msg):
             The timeout is disabled when set to 0.
     """
 
-    type_amino = "cosmos-sdk/MsgTransfer"
+    type = "cosmos-sdk/MsgTransfer"
     """"""
     type_url = "/ibc.applications.transfer.v1.MsgTransfer"
     """"""
-    proto_msg = MsgTransfer_pb
-    """"""
-    source_port = "transfer"
+    prototype = MsgTransfer_pb
     """"""
 
+    source_port: str = attr.ib()
     source_channel: str = attr.ib()
     token: Coin = attr.ib(converter=Coin.parse)
     sender: AccAddress = attr.ib()
     receiver: str = attr.ib()  # stay str-typed because it may not be our address
-    timeout_height: Height = attr.ib(default=Height())
-    timeout_timestamp: int = attr.ib(default=0, converter=int)
+    timeout_height: Height = attr.ib()
+    timeout_timestamp: int = attr.ib(converter=int)
 
     def to_amino(self) -> dict:
         return {
@@ -62,23 +61,13 @@ class MsgTransfer(Msg):
     @classmethod
     def from_data(cls, data: dict) -> MsgTransfer:
         return cls(
+            source_port=data["source_port"],
             source_channel=data["source_channel"],
             token=Coin.from_data(data["token"]),
             sender=data["sender"],
             receiver=data["receiver"],
             timeout_height=Height.from_data(data["timeout_height"]),
             timeout_timestamp=data["timeout_timestamp"],
-        )
-
-    @classmethod
-    def from_proto(cls, proto: MsgTransfer_pb) -> MsgTransfer:
-        return cls(
-            source_channel=proto.source_channel,
-            token=Coin.from_proto(proto.token),
-            sender=AccAddress(proto.sender),
-            receiver=proto.receiver,
-            timeout_height=Height.from_proto(proto.timeout_height),
-            timeout_timestamp=proto.timeout_timestamp,
         )
 
     def to_proto(self) -> MsgTransfer_pb:
@@ -90,4 +79,16 @@ class MsgTransfer(Msg):
             receiver=self.receiver,
             timeout_height=self.timeout_height.to_proto(),
             timeout_timestamp=self.timeout_timestamp,
+        )
+
+    @classmethod
+    def from_proto(cls, proto: MsgTransfer_pb) -> MsgTransfer:
+        return cls(
+            source_port=proto.source_port,
+            source_channel=proto.source_channel,
+            token=Coin.from_proto(proto.token),
+            sender=proto.sender,
+            receiver=proto.receiver,
+            timeout_height=Height.from_proto(proto.timeout_height),
+            timeout_timestamp=proto.timeout_timestamp,
         )

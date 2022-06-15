@@ -5,10 +5,11 @@ from __future__ import annotations
 from typing import List
 
 import attr
+from terra_proto.cosmos.authz.v1beta1 import MsgExec as MsgExec_pb
+from terra_proto.cosmos.authz.v1beta1 import MsgGrant as MsgGrant_pb
+from terra_proto.cosmos.authz.v1beta1 import MsgRevoke as MsgRevoke_pb
+
 from betterproto.lib.google.protobuf import Any as Any_pb
-from cosmos_proto.cosmos.authz.v1beta1 import MsgExec as MsgExec_pb
-from cosmos_proto.cosmos.authz.v1beta1 import MsgGrant as MsgGrant_pb
-from cosmos_proto.cosmos.authz.v1beta1 import MsgRevoke as MsgRevoke_pb
 
 from cosmos_sdk.core import AccAddress
 from cosmos_sdk.core.msg import Msg
@@ -31,7 +32,7 @@ class MsgExecAuthorized(Msg):
     """"""
     type_url = "/cosmos.authz.v1beta1.MsgExec"
     """"""
-    proto_msg = MsgExec_pb
+    prototype = MsgExec_pb
     """"""
 
     grantee: AccAddress = attr.ib()
@@ -46,19 +47,39 @@ class MsgExecAuthorized(Msg):
             },
         }
 
-    @classmethod
-    def from_data(cls, data: dict) -> MsgExecAuthorized:
-        return cls(grantee=data["grantee"], msgs=[Msg.from_data(md) for md in data["msgs"]])
+    def to_data(self) -> dict:
+        return {
+            "@type": self.type_url,
+            "grantee": self.grantee,
+            "msgs": [msg.to_data() for msg in self.msgs],
+        }
 
     @classmethod
-    def from_proto(cls, proto: MsgExec_pb) -> MsgExecAuthorized:
+    def from_data(cls, data: dict) -> MsgExecAuthorized:
         return cls(
-            grantee=AccAddress(proto.grantee),
-            msgs=[Msg.from_proto(m) for m in proto.msgs],
+            grantee=data["grantee"], msgs=[Msg.from_data(md) for md in data["msgs"]]
         )
 
     def to_proto(self) -> MsgExec_pb:
         return MsgExec_pb(grantee=self.grantee, msgs=[m.pack_any() for m in self.msgs])
+
+    @classmethod
+    def from_proto(cls, proto: MsgExec_pb) -> MsgExecAuthorized:
+        return cls(
+            grantee=proto.grantee, msgs=[Msg.from_proto(md) for md in proto.msgs]
+        )
+
+    @classmethod
+    def from_amino(cls, amino: dict) -> MsgExecAuthorized:
+        value = amino["value"]
+        return cls(
+            grantee=value["grantee"],
+            msgs=[Msg.from_amino(msg) for msg in value["msgs"]]
+        )
+
+    @classmethod
+    def unpack_any(cls, any_pb: Any_pb) -> MsgExecAuthorized:
+        return cls.from_proto(MsgExec_pb().parse(any_pb.value))
 
 
 @attr.s
@@ -75,7 +96,7 @@ class MsgGrantAuthorization(Msg):
     """"""
     type_url = "/cosmos.authz.v1beta1.MsgGrant"
     """"""
-    proto_msg = MsgGrant_pb
+    prototype = MsgGrant_pb
     """"""
 
     granter: AccAddress = attr.ib()
@@ -92,29 +113,42 @@ class MsgGrantAuthorization(Msg):
             },
         }
 
+    def to_data(self) -> dict:
+        return {
+            "@type": self.type_url,
+            "granter": self.granter,
+            "grantee": self.grantee,
+            "grant": self.grant.to_data(),
+        }
+
     @classmethod
     def from_data(cls, data: dict) -> MsgGrantAuthorization:
-        data = data["value"]
         return cls(
             granter=data["granter"],
             grantee=data["grantee"],
-            grant=AuthorizationGrant(
-                authorization=Authorization.from_data(data["grant"]["authorization"]),
-                expiration=str(data["grant"]["expiration"]),
-            ),
-        )
-
-    @classmethod
-    def from_proto(cls, proto: MsgGrant_pb) -> MsgGrantAuthorization:
-        return cls(
-            granter=AccAddress(proto.granter),
-            grantee=AccAddress(proto.grantee),
-            grant=AuthorizationGrant.from_proto(proto.grant),
+            grant=AuthorizationGrant.from_data(data["grant"])
         )
 
     def to_proto(self) -> MsgGrant_pb:
         return MsgGrant_pb(
             granter=self.granter, grantee=self.grantee, grant=self.grant.to_proto()
+        )
+
+    @classmethod
+    def from_proto(cls, proto: MsgGrant_pb) -> MsgGrantAuthorization:
+        return cls(
+            granter=proto.granter,
+            grantee=proto.grantee,
+            grant=AuthorizationGrant.from_proto(proto.grant)
+        )
+
+    @classmethod
+    def from_amino(cls, amino: dict) -> MsgGrantAuthorization:
+        value = amino["value"]
+        return cls(
+            grantee=value["grantee"],
+            granter=value["granter"],
+            grant=AuthorizationGrant.from_amino(value["grant"])
         )
 
 
@@ -132,6 +166,8 @@ class MsgRevokeAuthorization(Msg):
     """"""
     type_url = "/cosmos.authz.v1beta1.MsgRevoke"
     """"""
+    prototype = MsgRevoke_pb
+    """"""
 
     granter: AccAddress = attr.ib()
     grantee: AccAddress = attr.ib()
@@ -147,6 +183,14 @@ class MsgRevokeAuthorization(Msg):
             },
         }
 
+    def to_data(self) -> dict:
+        return {
+            "@type": self.type_url,
+            "granter": self.granter,
+            "grantee": self.grantee,
+            "msg_type_url": self.msg_type_url,
+        }
+
     @classmethod
     def from_data(cls, data: dict) -> MsgRevokeAuthorization:
         return cls(
@@ -158,4 +202,12 @@ class MsgRevokeAuthorization(Msg):
     def to_proto(self) -> MsgRevoke_pb:
         return MsgRevoke_pb(
             granter=self.granter, grantee=self.grantee, msg_type_url=self.msg_type_url
+        )
+
+    @classmethod
+    def from_proto(cls, proto: MsgRevoke_pb) -> MsgRevokeAuthorization:
+        return cls(
+            granter=proto.granter,
+            grantee=proto.grantee,
+            msg_type_url=proto.msg_type_url,
         )

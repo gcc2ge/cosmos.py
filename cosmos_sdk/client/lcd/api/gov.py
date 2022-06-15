@@ -7,7 +7,7 @@ from cosmos_sdk.core.gov.data import Vote
 
 from ._base import BaseAsyncAPI, sync_bind
 
-__all__ = ["AsyncGovAPI", "GovAPI"]
+__all__ = ["AsyncGovAPI", "GovAPI", "ProposalStatus"]
 
 from ..params import APIParams
 
@@ -15,18 +15,28 @@ from ..params import APIParams
 class AsyncGovAPI(BaseAsyncAPI):
     async def proposals(
         self, options: dict = {}, params: Optional[APIParams] = None
-    ) -> (List[Proposal], dict):
+    ) -> [List[Proposal], dict]:
         """Fetches all proposals.
-
         Args:
-            options (dict, optional): dictionary containing options. Defaults to {}.
-            params (APIParams): parameters for pagination, optional
+            options (dict, optional): dictionary containing options. Defaults to {}. you can use one or more below:
+                {
+                    "proposal_status": terra_sdk.core.gov.ProposalStatus (int)
+                    "voter": voter address (str),
+                    "depositor": depositor address(str)
+                }
+                example) {"proposal_status":1, "depositor":"terra17lmam6zguazs5q5u6z5mmx76uj63gldnse2pdp"}
+
+            params (APIParams, optional): additional params for the API like pagination
 
         Returns:
             List[Proposal]: proposals
         """
+        if params is not None:
+            options.update(params.to_dict())
         res = await self._c._get("/cosmos/gov/v1beta1/proposals", options)
-        return [Proposal.from_data(d) for d in res.get("proposals")], res.get("pagination")
+        return [Proposal.from_data(d) for d in res.get("proposals")], res.get(
+            "pagination"
+        )
 
     async def proposal(self, proposal_id: int) -> Proposal:
         """Fetches a single proposal by id.
@@ -43,9 +53,10 @@ class AsyncGovAPI(BaseAsyncAPI):
     # keep it private
     async def __search_submit_proposal(self, proposal_id: int):
         params = [
-            ("events", f"message.action='/cosmos.gov.v1beta1.MsgSubmitProposal'"),
-            ("events", f"submit_proposal.proposal_id={proposal_id}"),
+            ("message.action", "/cosmos.gov.v1beta1.MsgSubmitProposal"),
+            ("submit_proposal.proposal_id", proposal_id),
         ]
+
         res = await self._c._search(params)
         txs = res.get("txs")
         if txs is None or len(txs) <= 0:
@@ -53,10 +64,12 @@ class AsyncGovAPI(BaseAsyncAPI):
         return txs[0]
 
     # keep it private
-    async def __search_deposits(self, proposal_id: int, params: Optional[APIParams] = None):
+    async def __search_deposits(
+        self, proposal_id: int, params: Optional[APIParams] = None
+    ):
         events = [
-            ("events", f"message.action='/cosmos.gov.v1beta1.MsgDeposit'"),
-            ("events", f"proposal_deposit.proposal_id={proposal_id}"),
+            ("message.action", "/cosmos.gov.v1beta1.MsgDeposit"),
+            ("proposal_deposit.proposal_id", proposal_id),
         ]
         if params is not None:
             d = params.to_dict()
@@ -73,13 +86,14 @@ class AsyncGovAPI(BaseAsyncAPI):
         self, proposal_id: int, action: str, params: Optional[APIParams] = None
     ):
         events = [
-            ("events", f"message.action='/cosmos.gov.v1beta1.MsgVote'"),
-            ("events", f"proposal_vote.proposal_id={proposal_id}"),
+            ("message.action", "/cosmos.gov.v1beta1.MsgVote"),
+            ("proposal_vote.proposal_id", proposal_id),
         ]
         if params is not None:
             d = params.to_dict()
             for i in d.keys():
                 events.append((i, d.get(i)))
+
         res = await self._c._search(events)
         txs = res.get("txs")
         if txs is None or len(txs) <= 0:
@@ -108,7 +122,7 @@ class AsyncGovAPI(BaseAsyncAPI):
 
         Args:
             proposal_id (int): proposal ID
-            params (APIParams): parameters for pagination, optional
+            params (APIParams, optional): additional params for the API like pagination
         """
 
         proposal = self.proposal(proposal_id)
@@ -136,7 +150,7 @@ class AsyncGovAPI(BaseAsyncAPI):
 
         Args:
             proposal_id (int): proposal ID
-            params (APIParams): parameters for pagination, optional
+            params (APIParams, optional): additional params for the API like pagination
         """
 
         proposal = self.proposal(proposal_id)

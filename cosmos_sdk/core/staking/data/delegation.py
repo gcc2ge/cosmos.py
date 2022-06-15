@@ -4,18 +4,22 @@ from datetime import datetime
 from typing import List
 
 import attr
-from cosmos_proto.cosmos.staking.v1beta1 import Delegation as Delegation_pb
-from cosmos_proto.cosmos.staking.v1beta1 import DelegationResponse as DelegationResponse_pb
-from cosmos_proto.cosmos.staking.v1beta1 import Redelegation as Redelegation_pb
-from cosmos_proto.cosmos.staking.v1beta1 import RedelegationEntry as RedelegationEntry_pb
-from cosmos_proto.cosmos.staking.v1beta1 import (
+from dateutil import parser
+from terra_proto.cosmos.staking.v1beta1 import Delegation as Delegation_pb
+from terra_proto.cosmos.staking.v1beta1 import (
+    DelegationResponse as DelegationResponse_pb,
+)
+from terra_proto.cosmos.staking.v1beta1 import Redelegation as Redelegation_pb
+from terra_proto.cosmos.staking.v1beta1 import RedelegationEntry as RedelegationEntry_pb
+from terra_proto.cosmos.staking.v1beta1 import (
     RedelegationEntryResponse as RedelegationEntryResponse_pb,
 )
-from cosmos_proto.cosmos.staking.v1beta1 import UnbondingDelegation as UnbondingDelegation_pb
-from cosmos_proto.cosmos.staking.v1beta1 import (
+from terra_proto.cosmos.staking.v1beta1 import (
+    UnbondingDelegation as UnbondingDelegation_pb,
+)
+from terra_proto.cosmos.staking.v1beta1 import (
     UnbondingDelegationEntry as UnbondingDelegationEntry_pb,
 )
-from dateutil import parser
 
 from cosmos_sdk.core import AccAddress, Coin, Dec, ValAddress
 from cosmos_sdk.util.converter import to_isoformat
@@ -111,7 +115,7 @@ class UnbondingDelegationEntry(JSONSerializable):
             initial_balance=data["initial_balance"],
             balance=data["balance"],
             creation_height=data["creation_height"],
-            completion_time=data["completion_time"],
+            completion_time=parser.parse(data["completion_time"]),
         )
 
     def to_proto(self) -> UnbondingDelegationEntry_pb:
@@ -137,13 +141,15 @@ class UnbondingDelegation(JSONSerializable):
     def to_amino(self) -> dict:
         return {
             "delegator_address": self.delegator_address,
-            "validator_addresS": self.validator_address,
+            "validator_address": self.validator_address,
             "entries": [entry.to_amino() for entry in self.entries],
         }
 
     @classmethod
-    def from_data(cls, data) -> UnbondingDelegation:
-        entries = [UnbondingDelegationEntry.from_data(entry) for entry in data["entries"]]
+    def from_data(cls, data: dict) -> UnbondingDelegation:
+        entries = [
+            UnbondingDelegationEntry.from_data(entry) for entry in data["entries"]
+        ]
         return cls(
             delegator_address=data["delegator_address"],
             validator_address=data["validator_address"],
@@ -173,6 +179,23 @@ class RedelegationEntryInfo(JSONSerializable):
         return {
             "initial_balance": str(self.initial_balance),
             "shares_dst": str(self.shares_dst),
+            "creation_height": str(self.creation_height),
+            "completion_time": to_isoformat(self.completion_time),
+        }
+
+    @classmethod
+    def from_data(cls, data: dict) -> RedelegationEntryInfo:
+        return cls(
+            initial_balance=data["initial_balance"],
+            shares_dst=Dec.from_data(data("shares_dst")),
+            creation_height=data["creation_height"],
+            completion_time=parser.parse(data["completion_time"])
+        )
+
+    def to_data(self) -> dict:
+        return {
+            "initial_balance": self.initial_balance,
+            "shares_dst": self.shares_dst.to_data(),
             "creation_height": self.creation_height,
             "completion_time": to_isoformat(self.completion_time),
         }

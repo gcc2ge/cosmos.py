@@ -7,19 +7,20 @@ __all__ = ["SoftwareUpgradeProposal", "CancelSoftwareUpgradeProposal"]
 from typing import Optional
 
 import attr
-from cosmos_proto.cosmos.upgrade.v1beta1 import (
+from betterproto.lib.google.protobuf import Any as Any_pb
+from terra_proto.cosmos.upgrade.v1beta1 import (
     CancelSoftwareUpgradeProposal as CancelSoftwareUpgradeProposal_pb,
 )
-from cosmos_proto.cosmos.upgrade.v1beta1 import (
+from terra_proto.cosmos.upgrade.v1beta1 import (
     SoftwareUpgradeProposal as SoftwareUpgradeProposal_pb,
 )
 
 from cosmos_sdk.core.upgrade.plan import Plan
-from cosmos_sdk.util.base import BaseTerraData
+from cosmos_sdk.util.json import JSONSerializable
 
 
 @attr.s
-class SoftwareUpgradeProposal(BaseTerraData):
+class SoftwareUpgradeProposal(JSONSerializable):
     title: str = attr.ib()
     description: str = attr.ib()
     plan: Optional[Plan] = attr.ib()
@@ -27,8 +28,6 @@ class SoftwareUpgradeProposal(BaseTerraData):
     type_amino = "upgrade/SoftwareUpgradeProposal"
     """"""
     type_url = "/cosmos.upgrade.v1beta1.SoftwareUpgradeProposal"
-    """"""
-    proto_msg = SoftwareUpgradeProposal_pb
     """"""
 
     def to_amino(self) -> dict:
@@ -49,32 +48,33 @@ class SoftwareUpgradeProposal(BaseTerraData):
             plan=Plan.from_data(data["plan"]) if data.get("plan") else None,
         )
 
+    def to_proto(self) -> SoftwareUpgradeProposal_pb:
+        return SoftwareUpgradeProposal_pb(
+            title=self.title,
+            description=self.description,
+            plan=(self.plan.to_proto() if self.plan else None),
+        )
+
+    def pack_any(self) -> Any_pb:
+        return Any_pb(type_url=self.type_url, value=bytes(self.to_proto()))
+
     @classmethod
     def from_proto(cls, proto: SoftwareUpgradeProposal_pb) -> SoftwareUpgradeProposal:
         return cls(
             title=proto.title,
             description=proto.description,
-            plan=Plan.from_proto(proto.plan),
-        )
-
-    def to_proto(self) -> SoftwareUpgradeProposal_pb:
-        return SoftwareUpgradeProposal_pb(
-            title=self.title,
-            description=self.description,
-            plan=self.plan.to_proto() if self.plan else None,
+            plan=Plan.from_proto(proto.plan) if proto.plan else None,
         )
 
 
 @attr.s
-class CancelSoftwareUpgradeProposal(BaseTerraData):
+class CancelSoftwareUpgradeProposal(JSONSerializable):
     title: str = attr.ib()
     description: str = attr.ib()
 
     type_amino = "upgrade/CancelSoftwareUpgradeProposal"
     """"""
     type_url = "/cosmos.upgrade.v1beta1.CancelSoftwareUpgradeProposal"
-    """"""
-    proto_msg = CancelSoftwareUpgradeProposal_pb
     """"""
 
     def to_amino(self) -> dict:
@@ -90,11 +90,15 @@ class CancelSoftwareUpgradeProposal(BaseTerraData):
     def from_data(cls, data: dict) -> CancelSoftwareUpgradeProposal:
         return cls(title=data["title"], description=data["description"])
 
+    def to_proto(self) -> CancelSoftwareUpgradeProposal_pb:
+        return CancelSoftwareUpgradeProposal_pb(
+            title=self.title, description=self.description
+        )
+
+    def pack_any(self) -> Any_pb:
+        return Any_pb(type_url=self.type_url, value=bytes(self.to_proto()))
+
     @classmethod
-    def from_proto(
-        cls, proto: CancelSoftwareUpgradeProposal_pb
-    ) -> CancelSoftwareUpgradeProposal:
+    def from_proto(cls, proto: CancelSoftwareUpgradeProposal_pb) -> CancelSoftwareUpgradeProposal:
         return cls(title=proto.title, description=proto.description)
 
-    def to_proto(self) -> CancelSoftwareUpgradeProposal_pb:
-        return CancelSoftwareUpgradeProposal_pb(title=self.title, description=self.description)

@@ -4,9 +4,7 @@ from __future__ import annotations
 
 from typing import NewType
 
-from bech32 import bech32_decode, bech32_encode
-
-from .public_key import ValConsPubKey
+from bech32 import bech32_decode, bech32_encode, convertbits
 
 __all__ = [
     "AccAddress",
@@ -22,7 +20,15 @@ __all__ = [
     "to_acc_pubkey",
     "to_val_address",
     "to_val_pubkey",
+    "get_bech",
 ]
+
+
+def get_bech(prefix: str, payload: str) -> str:
+    data = convertbits(bytes.fromhex(payload), 8, 5)
+    if data is None:
+        raise ValueError(f"could not parse data: prefix {prefix}, payload {payload}")
+    return bech32_encode(prefix, data)  # base64 -> base32
 
 
 def check_prefix_and_length(prefix: str, data: str, length: int):
@@ -44,7 +50,7 @@ ValPubKey.__doc__ = """Terra Bech32 Validator PubKey -- type alias of str."""
 
 # ValConsPubKey = NewType("ValConsPubKey", str)
 # ValConsPubKey.__doc__ = (
-#    """Terra Bech32 Validator Conensus PubKey -- type alias of str."""
+#  """Terra Bech32 Validator Conensus PubKey -- type alias of str."""
 # )
 
 
@@ -169,7 +175,7 @@ def to_val_pubkey(data: AccPubKey) -> ValPubKey:
     return ValPubKey(bech32_encode("terravaloperpub", vals[1]))
 
 
-def is_valcons_pubkey(data: str) -> ValConsPubKey:
+def is_valcons_pubkey(data: str) -> bool:  # -> ValConsPubKey:
     """Checks whether provided string is a properly formatted Terra validator consensus
     pubkey.
 
@@ -177,6 +183,6 @@ def is_valcons_pubkey(data: str) -> ValConsPubKey:
         data (str): string to check
 
     Returns:
-        ValConsPubKey: validator consensus pubkey
+        bool: whether string is validator consensus pubkey
     """
     return check_prefix_and_length("terravalconspub", data, 83)

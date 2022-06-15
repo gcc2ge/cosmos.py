@@ -3,7 +3,7 @@ from __future__ import annotations
 import copy
 from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Union
 
-from cosmos_proto.cosmos.base.v1beta1 import Coin as Coin_pb
+from terra_proto.cosmos.base.v1beta1 import Coin as Coin_pb
 
 from cosmos_sdk.util.json import JSONSerializable
 
@@ -115,6 +115,16 @@ class Coins(JSONSerializable, List[Coin_pb]):
         coins = map(Coin.from_data, data)
         return cls(coins)
 
+    @classmethod
+    def from_amino(cls, amino: list) -> Coins:
+        """Converts list of Coin-amino objects to :class:`Coins`.
+
+        Args:
+            amino (list): list of Coin-data objects
+        """
+        coins = map(Coin.from_amino, amino)
+        return cls(coins)
+
     def to_amino(self) -> List[dict]:
         return [coin.to_amino() for coin in self]
 
@@ -135,7 +145,7 @@ class Coins(JSONSerializable, List[Coin_pb]):
         return [coin.to_proto() for coin in self]
 
     def to_dict(self) -> List[dict]:
-        return [coin.to_dict() for coin in self]
+        return [coin.to_dict for coin in self]
 
     def denoms(self) -> List[str]:
         """Get the list of denoms for all Coin objects contained."""
@@ -148,6 +158,10 @@ class Coins(JSONSerializable, List[Coin_pb]):
     def to_int_coins(self) -> Coins:
         """Creates new set of :class:`Coins` that have ``int`` amounts."""
         return Coins(c.to_int_coin() for c in self)
+
+    def to_int_ceil_coins(self) -> Coins:
+        """Creates a new :class:`Coins` object with all ``int`` coins with ceiling the amount"""
+        return Coins(c.to_int_ceil_coin() for c in self)
 
     def add(self, addend: Union[Coin, Coins]) -> Coins:
         """Performs addition, which combines the sets of Coin objects. Coins of similar denoms

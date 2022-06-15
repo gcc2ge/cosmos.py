@@ -4,12 +4,12 @@ Coin & Coins
 Coin
 ----
 
-.. autoclass:: cosmos_sdk.core.coin.Coin
+.. autoclass:: terra_sdk.core.coin.Coin
     :members:
 
 
 Coins
 -----
 
-.. autoclass:: cosmos_sdk.core.coins.Coins
+.. autoclass:: terra_sdk.core.coins.Coins
     :members:

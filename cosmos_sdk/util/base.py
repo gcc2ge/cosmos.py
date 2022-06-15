@@ -1,59 +1,65 @@
 """Some useful base classes to inherit from."""
-from typing import Any, Callable, Dict, List, Type, TypeVar
+from abc import abstractmethod
+from typing import Any, Callable, Dict, List
 
-from betterproto import Message
+import attr
 from betterproto.lib.google.protobuf import Any as Any_pb
+from betterproto import Message
 
 from .json import JSONSerializable, dict_to_data
-
-_BaseTerraDataT = TypeVar("_BaseTerraDataT", bound="BaseTerraData")
 
 
 class BaseTerraData(JSONSerializable, Message):
 
     type: str
     type_url: str
-    proto_msg: Type[Message]
 
     def to_data(self) -> dict:
-        return {"@type": self.type_url, **dict_to_data(self.__dict__)}
+        data = dict_to_data(attr.asdict(self))
+        data.update({"@type": self.type_url})
+        return data
 
-    @classmethod
-    def from_data(cls: Type[_BaseTerraDataT], data: dict) -> _BaseTerraDataT:
-        raise NotImplementedError
-
-    @classmethod
-    def from_proto(cls: Type[_BaseTerraDataT], data: Message) -> _BaseTerraDataT:
-        raise NotImplementedError
-
-    @classmethod
-    def from_proto_bytes(cls: Type[_BaseTerraDataT], data: bytes) -> _BaseTerraDataT:
-        return cls.from_proto(cls.proto_msg.FromString(data))
-
-    def to_proto(self) -> Message:
-        raise NotImplementedError
+    @abstractmethod
+    def to_proto(self):
+        pass
 
 
-def create_demux(
-    inputs: List[Type[_BaseTerraDataT]],
-) -> Callable[[Dict[str, Any]], _BaseTerraDataT]:
+# data demux
+def create_demux(inputs: List) -> Callable[[Dict[str, Any]], Any]:
     table = {i.type_url: i.from_data for i in inputs}
 
-    def from_data(data: dict) -> BaseTerraData:
+    def from_data(data: dict):
         return table[data["@type"]](data)
 
     return from_data
 
 
-def create_demux_proto(
-    inputs: List[Type[_BaseTerraDataT]],
-) -> Callable[[Message], _BaseTerraDataT]:
+# for other protos inside of msgs
+def create_demux_proto(inputs: List) -> Callable[[Dict[str, Any]], Any]:
     table = {i.type_url: i.from_proto for i in inputs}
-    table_bytes = {i.type_url: i.from_proto_bytes for i in inputs}
 
-    def from_proto(data: Message) -> BaseTerraData:
-        if isinstance(data, Any_pb):
-            return table_bytes[data.type_url](data.value)
-        return table[data.type_url](data)
+    def from_proto(proto: Any_pb):
+        return table[proto.type_url](proto)
 
     return from_proto
+
+
+# Any_pb to Proto for msgs
+def create_demux_unpack_any(inputs: List) -> Callable[[Dict[str, Any]], Any]:
+    table = {i.type_url: i.from_proto for i in inputs}
+    prototypes = {i.type_url: i.prototype for i in inputs}
+
+    def unpack_any(proto: Any_pb):
+        return table[proto.type_url](prototypes[proto.type_url]().parse(proto.value))
+
+    return unpack_any
+
+
+# legacy amino demux
+def create_demux_amino(inputs: List) -> Callable[[Dict[str, Any]], Any]:
+    table = {i.type_amino: i.from_amino for i in inputs}
+
+    def from_amino(data: dict):
+        return table[data["type"]](data)
+
+    return from_amino

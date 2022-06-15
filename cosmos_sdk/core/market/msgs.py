@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import attr
-from cosmos_proto.terra.market.v1beta1 import MsgSwap as MsgSwap_pb
-from cosmos_proto.terra.market.v1beta1 import MsgSwapSend as MsgSwapSend_pb
+from terra_proto.terra.market.v1beta1 import MsgSwap as MsgSwap_pb
+from terra_proto.terra.market.v1beta1 import MsgSwapSend as MsgSwapSend_pb
 
 from cosmos_sdk.core import AccAddress, Coin
 from cosmos_sdk.core.msg import Msg
@@ -26,9 +26,9 @@ class MsgSwap(Msg):
     """"""
     type_url = "/terra.market.v1beta1.MsgSwap"
     """"""
-    proto_msg = MsgSwap_pb
-    """"""
     action = "swap"
+    """"""
+    prototype = MsgSwap_pb
     """"""
 
     trader: AccAddress = attr.ib()
@@ -53,19 +53,19 @@ class MsgSwap(Msg):
             ask_denom=data["ask_denom"],
         )
 
-    @classmethod
-    def from_proto(cls, proto: MsgSwap_pb) -> MsgSwap:
-        return cls(
-            trader=AccAddress(proto.trader),
-            offer_coin=Coin.from_proto(proto.offer_coin),
-            ask_denom=proto.ask_denom,
-        )
-
     def to_proto(self) -> MsgSwap_pb:
         return MsgSwap_pb(
             trader=self.trader,
             offer_coin=self.offer_coin.to_proto(),
             ask_denom=self.ask_denom,
+        )
+
+    @classmethod
+    def from_proto(cls, proto: MsgSwap_pb) -> MsgSwap:
+        return cls(
+            trader=proto.trader,
+            offer_coin=Coin.from_proto(proto.offer_coin),
+            ask_denom=proto.ask_denom,
         )
 
 
@@ -84,9 +84,9 @@ class MsgSwapSend(Msg):
     """"""
     type_url = "/terra.market.v1beta1.MsgSwapSend"
     """"""
-    proto_msg = MsgSwapSend_pb
-    """"""
     action = "swapsend"
+    """"""
+    prototype = MsgSwapSend_pb
     """"""
 
     from_address: AccAddress = attr.ib()
@@ -114,19 +114,19 @@ class MsgSwapSend(Msg):
             ask_denom=data["ask_denom"],
         )
 
-    @classmethod
-    def from_proto(cls, proto: MsgSwapSend_pb) -> MsgSwapSend:
-        return cls(
-            from_address=AccAddress(proto.from_address),
-            to_address=AccAddress(proto.to_address),
-            offer_coin=Coin.from_proto(proto.offer_coin),
-            ask_denom=proto.ask_denom,
-        )
-
     def to_proto(self) -> MsgSwapSend_pb:
         return MsgSwapSend_pb(
             from_address=self.from_address,
             to_address=self.to_address,
             offer_coin=self.offer_coin.to_proto(),
             ask_denom=self.ask_denom,
+        )
+
+    @classmethod
+    def from_proto(cls, proto: MsgSwapSend_pb) -> MsgSwapSend:
+        return cls(
+            from_address=proto.from_address,
+            to_address=proto.to_address,
+            offer_coin=Coin.from_proto(proto.offer_coin),
+            ask_denom=proto.ask_denom,
         )

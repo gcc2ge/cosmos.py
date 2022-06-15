@@ -2,15 +2,16 @@
 
 from __future__ import annotations
 
-from typing import Any, List
+from typing import List
+
+from terra_proto.cosmos.bank.v1beta1 import Input as Input_pb
+from terra_proto.cosmos.bank.v1beta1 import MsgMultiSend as MsgMultiSend_pb
+from terra_proto.cosmos.bank.v1beta1 import MsgSend as MsgSend_pb
+from terra_proto.cosmos.bank.v1beta1 import Output as Output_pb
 
 from betterproto.lib.google.protobuf import Any as Any_pb
-from cosmos_proto.cosmos.bank.v1beta1 import Input as Input_pb
-from cosmos_proto.cosmos.bank.v1beta1 import MsgMultiSend as MsgMultiSend_pb
-from cosmos_proto.cosmos.bank.v1beta1 import MsgSend as MsgSend_pb
-from cosmos_proto.cosmos.bank.v1beta1 import Output as Output_pb
 
-from cosmos_sdk.core import AccAddress, Coin, Coins
+from cosmos_sdk.core import AccAddress, Coins
 from cosmos_sdk.core.msg import Msg
 from cosmos_sdk.util.json import JSONSerializable
 
@@ -21,12 +22,11 @@ import attr
 
 @attr.s
 class MsgSend(Msg):
-    """Sends native Terra assets (Luna or Terra stablecoins) from ``from_address`` to
-    ``to_address``.
+    """Sends native Terra assets (Luna or Terra stablecoins) from ``from_address`` to ``to_address``.
 
     Args:
-        from_address: sender
-        to_address: recipient
+        from_address (AccAddress): sender
+        to_address (AccAddress): recipient
         amount (Coins): coins to send
     """
 
@@ -34,9 +34,9 @@ class MsgSend(Msg):
     """"""
     type_url = "/cosmos.bank.v1beta1.MsgSend"
     """"""
-    proto_msg = MsgSend_pb
-    """"""
     action = "send"
+    """"""
+    prototype = MsgSend_pb
     """"""
 
     from_address: AccAddress = attr.ib()
@@ -61,11 +61,19 @@ class MsgSend(Msg):
             amount=Coins.from_data(data["amount"]),
         )
 
+    def to_data(self) -> dict:
+        return {
+            "@type": self.type_url,
+            "from_address": self.from_address,
+            "to_address": self.to_address,
+            "amount": self.amount.to_data(),
+        }
+
     @classmethod
     def from_proto(cls, proto: MsgSend_pb) -> MsgSend:
         return cls(
-            from_address=AccAddress(proto.from_address),
-            to_address=AccAddress(proto.to_address),
+            from_address=proto.from_address,
+            to_address=proto.to_address,
             amount=Coins.from_proto(proto.amount),
         )
 
@@ -82,19 +90,16 @@ class MultiSendInput(JSONSerializable):
     """Organizes data for MsgMultiSend input/outputs. Expects data to be provided in the
     format:
 
-    .. code-block:: python
-
-        {
-           "address": "terra1...",
-           "coins": "123456789uusd"
-        }
+    Args:
+         address (AccAddress): from_address
+         coins (Coins): amount to send from the address
     """
 
     address: AccAddress = attr.ib()
     """Input / output address."""
 
     coins: Coins = attr.ib(converter=Coins)
-    """Coins to be sent / received."""
+    """Coins to be sent."""
 
     def to_amino(self) -> dict:
         return {"address": self.address, "coins": self.coins.to_amino()}
@@ -108,11 +113,7 @@ class MultiSendInput(JSONSerializable):
 
     @classmethod
     def from_proto(cls, proto: Input_pb) -> MultiSendInput:
-        return cls(address=AccAddress(proto.address), coins=Coins.from_proto(proto.coins))
-
-    @classmethod
-    def from_proto_bytes(cls, data: bytes) -> MultiSendInput:
-        return cls.from_proto(Input_pb.FromString(data))
+        return cls(address=proto["address"], coins=Coins.from_proto(proto["coins"]))
 
     def to_proto(self) -> Input_pb:
         proto = Input_pb()
@@ -126,19 +127,16 @@ class MultiSendOutput(JSONSerializable):
     """Organizes data for MsgMultiSend input/outputs. Expects data to be provided in the
     format:
 
-    .. code-block:: python
-
-        {
-           "address": "terra1...",
-           "coins": "123456789uusd"
-        }
+    Args:
+         address (AccAddress): to_address
+         coins (Coins): amount to receive
     """
 
     address: AccAddress = attr.ib()
     """Input / output address."""
 
     coins: Coins = attr.ib(converter=Coins)
-    """Coins to be sent / received."""
+    """Coins to be received."""
 
     def to_amino(self) -> dict:
         return {"address": self.address, "coins": self.coins.to_amino()}
@@ -152,11 +150,7 @@ class MultiSendOutput(JSONSerializable):
 
     @classmethod
     def from_proto(cls, proto: Output_pb) -> MultiSendOutput:
-        return cls(address=AccAddress(proto.address), coins=Coins.from_proto(proto.coins))
-
-    @classmethod
-    def from_proto_bytes(cls, data: bytes) -> MultiSendOutput:
-        return cls.from_proto(Output_pb.FromString(data))
+        return cls(address=proto["address"], coins=Coins.from_proto(proto["coins"]))
 
     def to_proto(self) -> Output_pb:
         proto = Output_pb()
@@ -185,32 +179,18 @@ class MsgMultiSend(Msg):
     The total amount of coins in ``inputs`` must match ``outputs``. The transaction
     containing ``MsgMultiSend`` must contain signatures from all addresses used as inputs.
 
-    The ``inputs`` and ``output`` arguments should be of the form:
-
-    .. code-block:: python
-
-        [{
-            "address": "terra1...",
-            "coins": "123456789uusd"
-        },
-        {
-            "address": "terra12...",
-            "coins": "2983298ukrw,21323uusd"
-        }]
-
-
     Args:
-        inputs (List[MultiSendIO]): senders and amounts
-        outputs (List[MultiSendIO]): recipients and amounts
+        inputs (List[MultiSendInput]): senders and amounts
+        outputs (List[MultiSendOutput]): recipients and amounts
     """
 
     type_amino = "bank/MsgMultiSend"
     """"""
     type_url = "/cosmos.bank.v1beta1.MsgMultiSend"
     """"""
-    proto_msg = MsgMultiSend_pb
-    """"""
     action = "multisend"
+    """"""
+    prototype = MsgMultiSend_pb
     """"""
 
     inputs: List[MultiSendInput] = attr.ib(converter=convert_input_list)
@@ -221,8 +201,15 @@ class MsgMultiSend(Msg):
             "type": self.type_amino,
             "value": {
                 "inputs": [mi.to_amino() for mi in self.inputs],
-                "outputs": [mo.to_amino() for mo in self.inputs],
+                "outputs": [mo.to_amino() for mo in self.outputs],
             },
+        }
+
+    def to_data(self) -> dict:
+        return {
+            "@type": self.type_url,
+            "inputs": [mi.to_data() for mi in self.inputs],
+            "outputs": [mo.to_data() for mo in self.outputs],
         }
 
     @classmethod
@@ -235,8 +222,8 @@ class MsgMultiSend(Msg):
     @classmethod
     def from_proto(cls, proto: MsgMultiSend_pb) -> MsgMultiSend:
         return cls(
-            inputs=[MultiSendInput.from_proto(x) for x in proto.inputs],
-            outputs=[MultiSendOutput.from_proto(x) for x in proto.outputs],
+            inputs=[MultiSendInput.from_proto(x) for x in proto["inputs"]],
+            outputs=[MultiSendOutput.from_proto(x) for x in proto["outputs"]],
         )
 
     def to_proto(self) -> MsgMultiSend_pb:
@@ -244,3 +231,7 @@ class MsgMultiSend(Msg):
             inputs=[i.to_proto() for i in self.inputs],
             outputs=[o.to_proto() for o in self.outputs],
         )
+
+    @classmethod
+    def unpack_any(cls, any_pb: Any_pb) -> MsgMultiSend:
+        return cls.from_proto(MsgMultiSend_pb().parse(any_pb))

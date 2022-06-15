@@ -1,11 +1,11 @@
 from __future__ import annotations
 
+import math
 import re
-from dataclasses import dataclass
 from typing import Union
 
 import attr
-from cosmos_proto.cosmos.base.v1beta1 import Coin as Coin_pb
+from terra_proto.cosmos.base.v1beta1 import Coin as Coin_pb
 
 from cosmos_sdk.util.json import JSONSerializable
 
@@ -50,6 +50,10 @@ class Coin(JSONSerializable):
         """Creates a new :class:`Coin` with an ``int`` amount."""
         return Coin(self.denom, int(self.amount))
 
+    def to_int_ceil_coin(self) -> Coin:
+        """Turns the :class:`coin` into an ``int`` coin with ceiling the amount."""
+        return Coin(self.denom, int(math.ceil(self.amount)))
+
     def to_dec_coin(self) -> Coin:
         """Creates a new :class:`Coin` with a :class:`Dec` amount."""
         return Coin(self.denom, Dec(self.amount))
@@ -68,16 +72,9 @@ class Coin(JSONSerializable):
     def to_data(self) -> dict:
         return {"denom": self.denom, "amount": str(self.amount)}
 
-    def to_dict(self) -> dict:
-        return {"denom": self.denom, "amount": str(self.amount)}
-
     @classmethod
     def from_proto(cls, proto: Coin_pb) -> Coin:
-        return cls(proto.denom, proto.amount)  # type: ignore
-
-    @classmethod
-    def from_proto_bytes(cls, data: bytes) -> Coin:
-        return cls.from_proto(Coin_pb.FromString(data))
+        return cls(proto.denom, proto.amount)
 
     def to_proto(self) -> Coin_pb:
         coin = Coin_pb()
@@ -228,6 +225,15 @@ class Coin(JSONSerializable):
     @classmethod
     def from_data(cls, data: dict) -> Coin:
         """Deserializes a :class:`Coin` object from its JSON data representation.
+
+        Args:
+            data (dict): data object
+        """
+        return cls(data["denom"], data["amount"])
+
+    @classmethod
+    def from_amino(cls, data: dict) -> Coin:
+        """Deserializes a :class:`Coin` object from its amino-codec representation.
 
         Args:
             data (dict): data object

@@ -24,7 +24,7 @@ copyright = "2021, Terraform Labs, PTE."
 author = "Terraform Labs, PTE."
 
 # The full version, including alpha/beta/rc tags
-release = "1.0.0"
+release = "2.0.3"
 
 
 # -- General configuration ---------------------------------------------------
@@ -61,3 +61,7 @@ html_theme = "sphinx_rtd_theme"
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
+
+autodoc_default_options = {
+    "exclude-members": "prototype"
+}

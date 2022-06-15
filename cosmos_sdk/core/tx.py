@@ -4,28 +4,30 @@ from __future__ import annotations
 
 import base64
 import json
-import math
 from typing import Dict, List, Optional
 
 import attr
-from betterproto.lib.google.protobuf import Any as Any_pb
-from cosmos_proto.cosmos.base.abci.v1beta1 import AbciMessageLog as AbciMessageLog_pb
-from cosmos_proto.cosmos.base.abci.v1beta1 import Attribute as Attribute_pb
-from cosmos_proto.cosmos.base.abci.v1beta1 import StringEvent as StringEvent_pb
-from cosmos_proto.cosmos.base.abci.v1beta1 import TxResponse as TxResponse_pb
-from cosmos_proto.cosmos.crypto.multisig.v1beta1 import CompactBitArray as CompactBitArray_pb
-from cosmos_proto.cosmos.tx.signing.v1beta1 import SignMode as SignMode_pb
-from cosmos_proto.cosmos.tx.v1beta1 import AuthInfo as AuthInfo_pb
-from cosmos_proto.cosmos.tx.v1beta1 import ModeInfo as ModeInfo_pb
-from cosmos_proto.cosmos.tx.v1beta1 import ModeInfoMulti as ModeInfoMulti_pb
-from cosmos_proto.cosmos.tx.v1beta1 import ModeInfoSingle as ModeInfoSingle_pb
-from cosmos_proto.cosmos.tx.v1beta1 import SignerInfo as SignerInfo_pb
-from cosmos_proto.cosmos.tx.v1beta1 import Tx as Tx_pb
-from cosmos_proto.cosmos.tx.v1beta1 import TxBody as TxBody_pb
+from betterproto.lib.google.protobuf import Any
+from terra_proto.cosmos.base.abci.v1beta1 import AbciMessageLog as AbciMessageLog_pb
+from terra_proto.cosmos.base.abci.v1beta1 import Attribute as Attribute_pb
+from terra_proto.cosmos.base.abci.v1beta1 import StringEvent as StringEvent_pb
+from terra_proto.cosmos.base.abci.v1beta1 import TxResponse as TxResponse_pb
+from terra_proto.cosmos.tx.signing.v1beta1 import SignMode as SignMode_pb
+from terra_proto.cosmos.tx.v1beta1 import AuthInfo as AuthInfo_pb
+from terra_proto.cosmos.tx.v1beta1 import SignerInfo as SignerInfo_pb
+from terra_proto.cosmos.tx.v1beta1 import Tx as Tx_pb
+from terra_proto.cosmos.tx.v1beta1 import TxBody as TxBody_pb
 
+from cosmos_sdk.core.compact_bit_array import CompactBitArray
 from cosmos_sdk.core.fee import Fee
+from cosmos_sdk.core.mode_info import ModeInfo, ModeInfoMulti, ModeInfoSingle
 from cosmos_sdk.core.msg import Msg
-from cosmos_sdk.core.public_key import LegacyAminoPubKey, PublicKey, SimplePublicKey
+from cosmos_sdk.core.public_key import (
+    LegacyAminoMultisigPublicKey,
+    PublicKey,
+    SimplePublicKey,
+)
+from cosmos_sdk.core.signature_v2 import SignatureV2
 from cosmos_sdk.util.json import JSONSerializable
 
 __all__ = [
@@ -36,15 +38,13 @@ __all__ = [
     "TxLog",
     "TxInfo",
     "parse_tx_logs",
-    "ModeInfo",
-    "ModeInfoSingle",
-    "ModeInfoMulti",
     "SignerInfo",
     "SignerData",
-    "CompactBitArray",
 ]
 
 # just alias
+from cosmos_sdk.util.parse_msg import parse_proto
+
 SignMode = SignMode_pb
 
 
@@ -59,9 +59,9 @@ class Tx(JSONSerializable):
     """Data structure for a transaction which can be broadcasted.
 
     Args:
-        body: the processable content of the transaction
-        auth_info: the authorization related content of the transaction
-        signatures: signatures is a list of signatures that matches the length and order of body and auth_info
+        body (TxBody): the processable content of the transaction
+        auth_info (AuthInfo): the authorization related content of the transaction
+        signatures (List[bytes]): signatures is a list of signatures that matches the length and order of body and auth_info
     """
 
     body: TxBody = attr.ib()
@@ -72,22 +72,22 @@ class Tx(JSONSerializable):
         return {
             "body": self.body.to_data(),
             "auth_info": self.auth_info.to_data(),
-            "signatures": [base64.b64encode(sig).decode() for sig in self.signatures],
+            "signatures": [base64.b64encode(sig).decode('ascii') for sig in self.signatures],
         }
+
+    def to_proto(self) -> Tx_pb:
+        return Tx_pb(
+            body=self.body.to_proto(),
+            auth_info=self.auth_info.to_proto(),
+            signatures=self.signatures
+        )
 
     @classmethod
     def from_data(cls, data: dict) -> Tx:
         return cls(
             TxBody.from_data(data["body"]),
             AuthInfo.from_data(data["auth_info"]),
-            data["signatures"],
-        )
-
-    def to_proto(self) -> Tx_pb:
-        return Tx_pb(
-            self.body.to_proto(),
-            self.auth_info.to_proto(),
-            self.signatures,
+            [base64.b64decode(sig) for sig in data["signatures"]],
         )
 
     @classmethod
@@ -95,23 +95,28 @@ class Tx(JSONSerializable):
         return cls(
             TxBody.from_proto(proto.body),
             AuthInfo.from_proto(proto.auth_info),
-            proto.signatures,
+            proto.signatures
         )
 
     @classmethod
-    def from_proto_bytes(cls, data: bytes) -> Tx:
-        return cls.from_proto(Tx_pb.FromString(data))
+    def from_bytes(cls, txb: bytes) -> Tx:
+        proto = Tx_pb().parse(txb)
+        c = cls.from_proto(proto)
+        return c
 
     def append_empty_signatures(self, signers: List[SignerData]):
         for signer in signers:
             if signer.public_key is not None:
-                if isinstance(signer.public_key, LegacyAminoPubKey):
+                if isinstance(signer.public_key, LegacyAminoMultisigPublicKey):
                     signer_info = SignerInfo(
                         public_key=signer.public_key,
                         sequence=signer.sequence,
                         mode_info=ModeInfo(
-                            ModeInfoMulti(
-                                CompactBitArray.from_bits(len(signer.public_key.public_keys))
+                            multi=ModeInfoMulti(
+                                CompactBitArray.from_bits(
+                                    len(signer.public_key.public_keys)
+                                ),
+                                [],
                             )
                         ),
                     )
@@ -119,7 +124,9 @@ class Tx(JSONSerializable):
                     signer_info = SignerInfo(
                         public_key=signer.public_key,
                         sequence=signer.sequence,
-                        mode_info=ModeInfo(ModeInfoSingle(mode=SignMode.SIGN_MODE_DIRECT)),
+                        mode_info=ModeInfo(
+                            ModeInfoSingle(mode=SignMode.SIGN_MODE_DIRECT)
+                        ),
                     )
             else:
                 signer_info = SignerInfo(
@@ -129,6 +136,19 @@ class Tx(JSONSerializable):
                 )
             self.auth_info.signer_infos.append(signer_info)
             self.signatures.append(b" ")
+
+    def clear_signature(self):
+        self.signatures.clear()
+        self.auth_info.signer_infos.clear()
+
+    def append_signatures(self, signatures: List[SignatureV2]):
+        for sig in signatures:
+            mode_info, sig_bytes = sig.data.to_mode_info_and_signature()
+            self.signatures.append(sig_bytes)
+            # self.signatures.append(base64.b64decode(sig_bytes))
+            self.auth_info.signer_infos.append(
+                SignerInfo(sig.public_key, mode_info, sig.sequence)
+            )
 
 
 @attr.s
@@ -149,14 +169,14 @@ class TxBody(JSONSerializable):
         return {
             "messages": [m.to_data() for m in self.messages],
             "memo": self.memo if self.memo else "",
-            "timeout_height": self.timeout_height if self.timeout_height else 0,
+            "timeout_height": self.timeout_height if self.timeout_height else "0",
         }
 
     def to_proto(self) -> TxBody_pb:
         return TxBody_pb(
             messages=[m.pack_any() for m in self.messages],
             memo=self.memo or "",
-            timeout_height=self.timeout_height or 0,
+            timeout_height=self.timeout_height,
         )
 
     @classmethod
@@ -170,19 +190,16 @@ class TxBody(JSONSerializable):
     @classmethod
     def from_proto(cls, proto: TxBody_pb) -> TxBody:
         return cls(
-            [Msg.from_proto(m) for m in proto.messages],
+            [Msg.unpack_any(m) for m in proto.messages],
             proto.memo,
             proto.timeout_height,
         )
-
-    @classmethod
-    def from_proto_bytes(cls, data: bytes) -> TxBody:
-        return cls.from_proto(TxBody_pb.FromString(data))
 
 
 @attr.s
 class AuthInfo(JSONSerializable):
     """AuthInfo
+
     Args:
         signer_infos: information of the signers
         fee: Fee
@@ -216,22 +233,18 @@ class AuthInfo(JSONSerializable):
     @classmethod
     def from_proto(cls, proto: AuthInfo_pb) -> AuthInfo:
         return cls(
-            signer_infos=[SignerInfo.from_proto(m) for m in proto.signer_infos],
-            fee=Fee.from_proto(proto.fee),
+            [SignerInfo.from_proto(m) for m in proto.signer_infos],
+            Fee.from_proto(proto.fee),
         )
-
-    @classmethod
-    def from_proto_bytes(cls, data: bytes) -> AuthInfo:
-        return cls.from_proto(AuthInfo_pb.FromString(data))
 
 
 @attr.s
 class SignerInfo(JSONSerializable):
     """SignerInfo
     Args:
-       public_key:
-       sequence:
-       mode_info:
+       public_key (PublicKey)
+       mode_info (ModeInfo)
+       sequence (int)
     """
 
     public_key: PublicKey = attr.ib()
@@ -267,165 +280,6 @@ class SignerInfo(JSONSerializable):
             mode_info=ModeInfo.from_proto(proto.mode_info),
             sequence=proto.sequence,
         )
-
-    @classmethod
-    def from_proto_bytes(cls, data: bytes) -> SignerInfo:
-        return cls.from_proto(SignerInfo_pb.FromString(data))
-
-
-@attr.s
-class ModeInfo(JSONSerializable):
-
-    single: Optional[ModeInfoSingle] = attr.ib(default=None)
-    multi: Optional[ModeInfoMulti] = attr.ib(default=None)
-
-    def to_data(self) -> dict:
-        return {
-            "single": self.single.to_data() if self.single else None,
-            "multi": self.multi.to_data() if self.multi else None,
-        }
-
-    @classmethod
-    def from_data(cls, data: dict) -> ModeInfo:
-        return cls(
-            ModeInfoSingle.from_data(data["single"]) if "single" in data else None,
-            ModeInfoMulti.from_data(data["multi"]) if "multi" in data else None,
-        )
-
-    def to_proto(self) -> ModeInfo_pb:
-        if self.single:
-            return ModeInfo_pb(single=self.single.to_proto())
-        elif self.multi:
-            return ModeInfo_pb(multi=self.multi.to_proto())
-        raise Exception("Either single or multi must be set")
-
-    @classmethod
-    def from_proto(cls, proto: ModeInfo_pb) -> ModeInfo:
-        return ModeInfo(
-            ModeInfoSingle.from_proto(proto.single),
-            ModeInfoMulti.from_proto(proto.multi),
-        )
-
-    @classmethod
-    def from_proto_bytes(cls, data: bytes) -> ModeInfo:
-        return cls.from_proto(ModeInfo_pb.FromString(data))
-
-
-@attr.s
-class ModeInfoSingle(JSONSerializable):
-    mode: SignMode = attr.ib()
-
-    def to_data(self) -> dict:
-        return {"mode": self.mode}
-
-    @classmethod
-    def from_data(cls, data: dict) -> ModeInfoSingle:
-        return cls(data["mode"])
-
-    def to_proto(self) -> ModeInfoSingle_pb:
-        return ModeInfoSingle_pb(mode=self.mode)
-
-    @classmethod
-    def from_proto(cls, proto: ModeInfoSingle_pb) -> ModeInfoSingle:
-        return cls(mode=proto.mode)
-
-    @classmethod
-    def from_proto_bytes(cls, data: bytes) -> ModeInfoSingle:
-        return cls.from_proto(ModeInfoSingle_pb.FromString(data))
-
-
-@attr.s
-class ModeInfoMulti(JSONSerializable):
-    bitarray: CompactBitArray = attr.ib()
-    mode_infos: List[ModeInfo] = attr.ib()
-
-    @classmethod
-    def from_data(cls, data: dict) -> ModeInfoMulti:
-        return cls(data["bitarray"], data["mode_infos"])
-
-    def to_proto(self) -> ModeInfoMulti_pb:
-        proto = ModeInfoMulti_pb()
-        proto.bitarray = self.bitarray.to_proto()
-        proto.mode_infos = [mi.to_proto() for mi in self.mode_infos]
-        return proto
-
-    @classmethod
-    def from_proto(cls, proto: ModeInfoMulti_pb) -> ModeInfoMulti:
-        return cls(
-            CompactBitArray.from_proto(proto.bitarray),
-            [ModeInfo.from_proto(i) for i in proto.mode_infos],
-        )
-
-    @classmethod
-    def from_proto_bytes(cls, data: bytes) -> ModeInfoMulti:
-        return cls.from_proto(ModeInfoMulti_pb.FromString(data))
-
-
-@attr.s
-class CompactBitArray(JSONSerializable):
-    extra_bits_stored: int = attr.ib(converter=int)
-    elems: bytes = attr.ib()
-
-    @classmethod
-    def from_data(cls, data: dict) -> CompactBitArray:
-        return cls(data["extra_bits_stored"], data["elems"])
-
-    @classmethod
-    def from_proto(cls, proto: CompactBitArray_pb) -> CompactBitArray:
-        return cls(proto.extra_bits_stored, proto.elems)
-
-    @classmethod
-    def from_proto_bytes(cls, data: bytes) -> CompactBitArray:
-        return cls.from_proto(CompactBitArray_pb.FromString(data))
-
-    def to_proto(self) -> CompactBitArray_pb:
-        return CompactBitArray_pb(extra_bits_stored=self.extra_bits_stored, elems=self.elems)
-
-    @classmethod
-    def from_bits(cls, bits: int) -> CompactBitArray:
-        if bits <= 0:
-            raise ValueError("CompactBitArray bits must be bigger than 0")
-
-        num_elems = (bits + 7) / 8
-        if num_elems <= 0 or num_elems > (math.pow(2, 32) - 1):
-            raise ValueError("CompactBitArray overflow")
-
-        return CompactBitArray(bits % 8, bytes(num_elems))
-
-    def count(self) -> int:
-        if self.extra_bits_stored == 0:
-            return len(self.elems) * 8
-        return (len(self.elems) - 1) * 8 + self.extra_bits_stored
-
-    def get_index(self, i: int) -> bool:
-        if i < 0 or i >= self.count():
-            return False
-        return self.elems[(i >> 3)] & ((1 << (7 - (i % 8))) > 0)
-
-    def set_index(self, i: int, v: bool) -> bool:
-        if i < 0 or i >= self.count():
-            return False
-        if v:  # True
-            self.elems[i >> 3] |= 1 << (7 - (i % 8))
-        else:  # False
-            self.elems[i >> 3] &= ~(1 << (7 - (i % 8)))
-        return True
-
-    def num_true_bits_before(self, index: int) -> int:
-        def count_one_bits(n: int):
-            return len("{0:b}".format(n).split("0").join(""))
-
-        ones_count = 0
-        max = self.count()
-        if index > max:
-            index = max
-
-        elem = 0
-        while True:
-            if elem * 8 + 7 >= index:
-                ones_count += count_one_bits(self.elems[elem] >> (7 - (index % 8) + 1))
-                return ones_count
-            ones_count += count_one_bits(self.elems[elem])
 
 
 def parse_events_by_type(event_data: List[dict]) -> Dict[str, Dict[str, List[str]]]:
@@ -468,22 +322,16 @@ class TxLog(JSONSerializable):
         self.events_by_type = parse_events_by_type(self.events)
 
     @classmethod
-    def from_proto(cls, proto: AbciMessageLog_pb) -> TxLog:
-        return cls(
-            msg_index=proto.msg_index,
-            log=proto.log,
-            events=[event.to_dict() for event in proto.events],
-        )
-
-    @classmethod
-    def from_proto_bytes(cls, data: bytes) -> TxLog:
-        return cls.from_proto(AbciMessageLog_pb.FromString(data))
+    def from_proto(cls, tx_log: AbciMessageLog_pb) -> TxLog:
+        events = [event for event in tx_log["events"]]
+        return cls(msg_index=tx_log["msg_index"], log=tx_log["log"], events=events)
 
     def to_proto(self) -> AbciMessageLog_pb:
+        str_events = List
+        for event in self.events:
+            str_events.append(json.dumps(event))
         return AbciMessageLog_pb(
-            msg_index=self.msg_index,
-            log=self.log,
-            events=[StringEvent_pb(**e) for e in self.events],
+            msg_index=self.msg_index, log=self.log, events=str_events
         )
 
 
@@ -502,33 +350,19 @@ class Attribute(JSONSerializable):
     def from_proto(cls, attrib: Attribute_pb) -> Attribute:
         return cls(key=attrib["key"], value=attrib["value"])
 
-    @classmethod
-    def from_proto_bytes(cls, data: bytes) -> Attribute:
-        return cls.from_proto(Attribute_pb.FromString(data))
-
 
 @attr.s
 class StringEvent(JSONSerializable):
 
     type: str = attr.ib()
-    attributes: List[dict] = attr.ib()
+    attributes = attr.ib()
 
     def to_proto(self) -> StringEvent_pb:
-        return StringEvent_pb(
-            self.type,
-            [Attribute_pb(a["key"], a["value"]) for a in self.attributes],
-        )
+        return StringEvent_pb(type=self.type, attributes=self.attributes)
 
     @classmethod
-    def from_proto(cls, proto: StringEvent_pb) -> StringEvent:
-        return cls(
-            proto.type,
-            [{"key": a.key, "value": a.value} for a in proto.attributes],
-        )
-
-    @classmethod
-    def from_proto_bytes(cls, data: bytes) -> StringEvent:
-        return cls.from_proto(StringEvent_pb.FromString(data))
+    def from_proto(cls, str_event: StringEvent_pb) -> StringEvent:
+        return cls(type=str_event["type"], attributes=str_event["attributes"])
 
 
 def parse_tx_logs(logs) -> Optional[List[TxLog]]:
@@ -553,7 +387,7 @@ class TxInfo(JSONSerializable):
 
     .. note::
         Users are not expected to create this object directly. It is returned by
-        :meth:`TxAPI.tx_info()<cosmos_sdk.client.lcd.api.tx.TxAPI.tx_info>`
+        :meth:`TxAPI.tx_info()<terra_sdk.client.lcd.api.tx.TxAPI.tx_info>`
     """
 
     height: int = attr.ib(converter=int)
@@ -613,34 +447,32 @@ class TxInfo(JSONSerializable):
 
     @classmethod
     def from_data(cls, data: dict) -> TxInfo:
-        tx = data["tx"]
-        resp = data["tx_response"]
         return cls(
-            resp["height"],
-            resp["txhash"],
-            resp["raw_log"],
-            parse_tx_logs(resp.get("logs")),
-            resp["gas_wanted"],
-            resp["gas_used"],
-            Tx.from_data(tx),
-            resp["timestamp"],
-            resp.get("code"),
-            resp.get("codespace"),
+            data.get("height"),
+            data.get("txhash"),
+            data.get("raw_log"),
+            parse_tx_logs(data.get("logs")),
+            data.get("gas_wanted"),
+            data.get("gas_used"),
+            Tx.from_data(data.get("tx")),
+            data.get("timestamp"),
+            data.get("code"),
+            data.get("codespace"),
         )
 
     def to_proto(self) -> TxResponse_pb:
-        return TxResponse_pb(
-            height=self.height,
-            txhash=self.txhash,
-            raw_log=self.rawlog,
-            logs=[log.to_proto() for log in self.logs] if self.logs else [],
-            gas_wanted=self.gas_wanted,
-            gas_used=self.gas_used,
-            timestamp=self.timestamp,
-            tx=self.tx.to_proto(),
-            code=self.code or 0,
-            codespace=self.codespace or "",
-        )
+        proto = TxResponse_pb()
+        proto.height = self.height
+        proto.txhash = self.txhash
+        proto.raw_log = self.rawlog
+        proto.logs = [log.to_proto() for log in self.logs] if self.logs else None
+        proto.gas_wanted = self.gas_wanted
+        proto.gas_used = self.gas_used
+        proto.timestamp = self.timestamp
+        proto.tx = self.tx.to_proto()
+        proto.code = self.code
+        proto.codespace = self.codespace
+        return proto
 
     @classmethod
     def from_proto(cls, proto: TxResponse_pb) -> TxInfo:
@@ -656,7 +488,3 @@ class TxInfo(JSONSerializable):
             code=proto.code,
             codespace=proto.codespace,
         )
-
-    @classmethod
-    def from_proto_bytes(cls, data: bytes) -> TxInfo:
-        return cls.from_proto(TxResponse_pb.FromString(data))

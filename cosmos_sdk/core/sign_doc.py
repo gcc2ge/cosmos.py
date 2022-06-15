@@ -2,13 +2,17 @@
 
 from __future__ import annotations
 
+import json
+
 import attr
-from cosmos_proto.cosmos.tx.v1beta1 import SignDoc as SignDoc_pb
+from terra_proto.cosmos.tx.v1beta1 import SignDoc as SignDoc_pb
 
 from cosmos_sdk.core.tx import AuthInfo, TxBody
 from cosmos_sdk.util.json import JSONSerializable
 
 __all__ = ["SignDoc"]
+
+from cosmos_sdk.util.remove_none import remove_none
 
 
 @attr.s
@@ -27,7 +31,7 @@ class SignDoc(JSONSerializable):
             "account_number": str(self.account_number),
             "sequence": str(self.sequence),
             "timeout_height": str(tx.timeout_height)
-            if (tx.timeout_height and tx.timeout_height != 0)
+            if (tx.timeout_height is not None and tx.timeout_height != 0)
             else None,
             "fee": auth.fee.to_amino(),
             "msgs": [msg.to_amino() for msg in tx.messages],
@@ -62,10 +66,6 @@ class SignDoc(JSONSerializable):
             tx_body=TxBody.from_proto(proto.body_bytes),
         )
 
-    @classmethod
-    def from_proto_bytes(cls, data: bytes) -> SignDoc:
-        return cls.from_proto(SignDoc_pb.FromString(data))
-
     def to_proto(self) -> SignDoc_pb:
         return SignDoc_pb(
             body_bytes=bytes(self.tx_body.to_proto()),
@@ -73,7 +73,13 @@ class SignDoc(JSONSerializable):
             chain_id=self.chain_id,
             account_number=self.account_number,
         )
-        return proto
 
     def to_bytes(self) -> bytes:
         return bytes(self.to_proto())
+
+    def to_amino_json(self) -> bytes:
+        amino = self.to_amino()
+        return bytes(
+            json.dumps(remove_none(amino), sort_keys=True, separators=(",", ":")),
+            "utf-8",
+        )

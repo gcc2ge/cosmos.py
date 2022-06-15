@@ -26,7 +26,9 @@ class AsyncAuthAPI(BaseAsyncAPI):
 
 class AuthAPI(AsyncAuthAPI):
     @sync_bind(AsyncAuthAPI.account_info)
-    def account_info(self, address: AccAddress) -> Union[Account, LazyGradedVestingAccount]:
+    def account_info(
+        self, address: AccAddress
+    ) -> Union[Account, LazyGradedVestingAccount]:
         pass
 
     account_info.__doc__ = AsyncAuthAPI.account_info.__doc__

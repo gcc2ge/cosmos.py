@@ -1,6 +1,6 @@
 import base64
 import json
-from typing import Any
+from typing import Any, Union
 
 from cosmos_sdk.core import Numeric
 
@@ -46,18 +46,20 @@ class AsyncWasmAPI(BaseAsyncAPI):
             "init_msg": contract_info["init_msg"],
         }
 
-    async def contract_query(self, contract_address: str, query: dict) -> Any:
+    async def contract_query(self, contract_address: str, query: Union[dict, str]) -> Any:
         """Runs a QueryMsg on a contract.
 
         Args:
             contract_address (str): contract address
-            query_msg (dict): QueryMsg to run
+            query (dict): QueryMsg to run
 
         Returns:
             Any: results of query
         """
         params = {
-            "query_msg": base64.b64encode(json.dumps(query).encode("utf-8")).decode("utf-8")
+            "query_msg": base64.b64encode(json.dumps(query).encode("utf-8")).decode(
+                "utf-8"
+            )
         }
         res = await self._c._get(
             f"/terra/wasm/v1beta1/contracts/{contract_address}/store", params
@@ -93,7 +95,7 @@ class WasmAPI(AsyncWasmAPI):
     contract_info.__doc__ = AsyncWasmAPI.contract_info.__doc__
 
     @sync_bind(AsyncWasmAPI.contract_query)
-    def contract_query(self, contract_address: str, query_msg: dict) -> Any:
+    def contract_query(self, contract_address: str, query: Union[dict, str]) -> Any:
         pass
 
     contract_query.__doc__ = AsyncWasmAPI.contract_query.__doc__

@@ -1,12 +1,17 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
 from cosmos_sdk.core.public_key import PublicKey
+from cosmos_sdk.util.json import JSONSerializable
 
 from .base_account import BaseAccount
 from .lazy_graded_vesting_account import LazyGradedVestingAccount
 
 
-class Account(BaseAccount):
+class Account(JSONSerializable, ABC):
+    @abstractmethod
+    def get_account_number(self) -> int:
+        pass
+
     @abstractmethod
     def get_sequence(self) -> int:
         pass
@@ -14,6 +19,13 @@ class Account(BaseAccount):
     @abstractmethod
     def get_public_key(self) -> PublicKey:
         pass
+
+    @classmethod
+    def from_amino(cls, amino: dict):  # -> Account:
+        if amino["type"] == BaseAccount.type_amino:
+            return BaseAccount.from_amino(amino)
+        else:
+            return LazyGradedVestingAccount.from_amino(amino)
 
     @classmethod
     def from_data(cls, data: dict):  # -> Account:

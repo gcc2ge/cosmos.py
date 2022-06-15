@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import attr
-from cosmos_proto.cosmos.gov.v1beta1 import MsgDeposit as MsgDeposit_pb
-from cosmos_proto.cosmos.gov.v1beta1 import MsgSubmitProposal as MsgSubmitProposal_pb
-from cosmos_proto.cosmos.gov.v1beta1 import MsgVote as MsgVote_pb
+from terra_proto.cosmos.gov.v1beta1 import MsgDeposit as MsgDeposit_pb
+from terra_proto.cosmos.gov.v1beta1 import MsgSubmitProposal as MsgSubmitProposal_pb
+from terra_proto.cosmos.gov.v1beta1 import MsgVote as MsgVote_pb
 
 from cosmos_sdk.core import AccAddress, Coins
 from cosmos_sdk.core.msg import Msg
@@ -22,16 +22,16 @@ class MsgSubmitProposal(Msg):
     Args:
         content (Content): type of proposal
         initial_deposit (Coins): initial deposit for proposal made by proposer
-        proposer: proposal submitter
+        proposer (AccAddress): proposal submitter
     """
 
     type_amino = "gov/MsgSubmitProposal"
     """"""
     type_url = "/cosmos.gov.v1beta1.MsgSubmitProposal"
     """"""
-    proto_msg = MsgSubmitProposal_pb
-    """"""
     action = "submit_proposal"
+    """"""
+    prototype = MsgSubmitProposal_pb
     """"""
 
     content: Content = attr.ib()
@@ -48,6 +48,14 @@ class MsgSubmitProposal(Msg):
             },
         }
 
+    def to_data(self) -> dict:
+        return {
+            "@type": self.type_url,
+            "content": self.content.to_data(),
+            "initial_deposit": self.initial_deposit.to_data(),
+            "proposer": self.proposer
+        }
+
     @classmethod
     def from_data(cls, data: dict) -> MsgSubmitProposal:
         from cosmos_sdk.util.parse_content import parse_content
@@ -59,22 +67,21 @@ class MsgSubmitProposal(Msg):
             proposer=data["proposer"],
         )
 
-    @classmethod
-    def from_proto(cls, proto: MsgSubmitProposal_pb) -> MsgSubmitProposal:
-        from cosmos_sdk.util.parse_content import parse_content_proto
-
-        content = parse_content_proto(proto.content)
-        return cls(
-            content=content,
-            initial_deposit=Coins.from_proto(proto.initial_deposit),
-            proposer=AccAddress(proto.proposer),
-        )
-
     def to_proto(self) -> MsgSubmitProposal_pb:
         return MsgSubmitProposal_pb(
             content=self.content.to_proto(),
             initial_deposit=self.initial_deposit.to_proto(),
             proposer=self.proposer,
+        )
+
+    @classmethod
+    def from_proto(cls, proto: MsgSubmitProposal_pb) -> MsgSubmitProposal:
+        from cosmos_sdk.util.parse_content import parse_content_proto
+        content = parse_content_proto(proto.content)
+        return cls(
+            content=content,
+            initial_deposit=Coins.from_proto(proto["initial_deposit"]),
+            proposer=proto["proposer"],
         )
 
 
@@ -83,8 +90,8 @@ class MsgDeposit(Msg):
     """Deposit funds for an active deposit-stage proposal.
 
     Args:
-        proposal_id: proposal number to deposit for
-        depositor: account making deposit
+        proposal_id (int): proposal number to deposit for
+        depositor (AccAddress): account making deposit
         amount (Coins): amount to deposit
     """
 
@@ -92,9 +99,9 @@ class MsgDeposit(Msg):
     """"""
     type_url = "/cosmos.gov.v1beta1.MsgDeposit"
     """"""
-    proto_msg = MsgDeposit_pb
-    """"""
     action = "deposit"
+    """"""
+    prototype = MsgDeposit_pb
     """"""
 
     proposal_id: int = attr.ib(converter=int)
@@ -111,20 +118,20 @@ class MsgDeposit(Msg):
             },
         }
 
+    def to_data(self) -> dict:
+        return {
+            "@type": self.type_url,
+            "proposal_id": str(self.proposal_id),
+            "depositor": self.depositor,
+            "amount": self.amount.to_data(),
+        }
+
     @classmethod
     def from_data(cls, data: dict) -> MsgDeposit:
         return cls(
             proposal_id=data["proposal_id"],
             depositor=data["depositor"],
             amount=Coins.from_data(data["amount"]),
-        )
-
-    @classmethod
-    def from_proto(cls, proto: MsgDeposit_pb) -> MsgDeposit:
-        return cls(
-            proposal_id=proto.proposal_id,
-            depositor=AccAddress(proto.depositor),
-            amount=Coins.from_proto(proto.amount),
         )
 
     def to_proto(self) -> MsgDeposit_pb:
@@ -134,25 +141,32 @@ class MsgDeposit(Msg):
             amount=self.amount.to_proto(),
         )
 
+    @classmethod
+    def from_proto(cls, proto: MsgDeposit_pb) -> MsgDeposit:
+        return cls(
+            proposal_id=proto["proposal_id"],
+            depositor=proto["depositor"],
+            amount=Coins.from_proto(proto["amount"]),
+        )
+
 
 @attr.s
 class MsgVote(Msg):
     """Vote for an active voting-stage proposal.
 
     Args:
-        proposal_id: proposal to vote for
-        voter: account casting vote
-        option: vote option (must be one of: :data:`MsgVote.ABSTAIN`,
-            :data:`MsgVote.YES`, :data:`MsgVote.NO`, or :data:`MsgVote.NO_WITH_VETO`,
+        proposal_id (int): proposal to vote for
+        voter (AccAddress): account casting vote
+        option (VoteOption): vote option (must be one of: :data:`MsgVote.ABSTAIN`, :data:`MsgVote.YES`, :data:`MsgVote.NO`, or :data:`MsgVote.NO_WITH_VETO`),
     """
 
     type_amino = "gov/MsgVote"
     """"""
     type_url = "/cosmos.gov.v1beta1.MsgVote"
     """"""
-    proto_msg = MsgVote_pb
-    """"""
     action = "vote"
+    """"""
+    prototype = MsgVote_pb
     """"""
 
     EMPTY = "Empty"
@@ -205,13 +219,15 @@ class MsgVote(Msg):
             option=data["option"],
         )
 
+    def to_proto(self) -> MsgVote_pb:
+        return MsgVote_pb(
+            proposal_id=self.proposal_id, voter=self.voter, options=self.option
+        )
+
     @classmethod
     def from_proto(cls, proto: MsgVote_pb) -> MsgVote:
         return cls(
             proposal_id=proto.proposal_id,
-            voter=AccAddress(proto.voter),
-            option=proto.option,
+            voter=proto.voter,
+            option=proto.option
         )
-
-    def to_proto(self) -> MsgVote_pb:
-        return MsgVote_pb(proposal_id=self.proposal_id, voter=self.voter, option=self.option)

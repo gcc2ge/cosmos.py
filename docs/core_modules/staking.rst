@@ -1,10 +1,10 @@
 Staking
-======
+=======
 
 API
 ---
 
-.. autoclass:: cosmos_sdk.client.lcd.api.staking.StakingAPI
+.. autoclass:: terra_sdk.client.lcd.api.staking.StakingAPI
     :members: 
 
 Data
@@ -13,18 +13,18 @@ Data
 Delegation
 ^^^^^^^^^^
 
-.. automodule:: cosmos_sdk.core.staking.data.delegation
+.. automodule:: terra_sdk.core.staking.data.delegation
     :members:
 
 Validator
 ^^^^^^^^^
 
-.. automodule:: cosmos_sdk.core.staking.data.validator
+.. automodule:: terra_sdk.core.staking.data.validator
     :members:
 
 
 Messages
 --------
 
-.. automodule:: cosmos_sdk.core.staking.msgs
+.. automodule:: terra_sdk.core.staking.msgs
     :members:
