@@ -5,11 +5,11 @@ from datetime import datetime
 
 import attr
 from dateutil import parser
-from terra_proto.cosmos.staking.v1beta1 import BondStatus
-from terra_proto.cosmos.staking.v1beta1 import Commission as Commission_pb
-from terra_proto.cosmos.staking.v1beta1 import CommissionRates as CommissionRates_pb
-from terra_proto.cosmos.staking.v1beta1 import Description as Description_pb
-from terra_proto.cosmos.staking.v1beta1 import Validator as Validator_pb
+from cosmos_proto.cosmos.staking.v1beta1 import BondStatus
+from cosmos_proto.cosmos.staking.v1beta1 import Commission as Commission_pb
+from cosmos_proto.cosmos.staking.v1beta1 import CommissionRates as CommissionRates_pb
+from cosmos_proto.cosmos.staking.v1beta1 import Description as Description_pb
+from cosmos_proto.cosmos.staking.v1beta1 import Validator as Validator_pb
 
 from cosmos_sdk.core import Dec, ValAddress, ValConsPubKey
 from cosmos_sdk.util.converter import to_isoformat

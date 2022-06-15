@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import attr
-from terra_proto.ibc.applications.transfer.v1 import MsgTransfer as MsgTransfer_pb
+from cosmos_proto.ibc.applications.transfer.v1 import MsgTransfer as MsgTransfer_pb
 
 from cosmos_sdk.core import AccAddress, Coin
 from cosmos_sdk.core.ibc.data import Height

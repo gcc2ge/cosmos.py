@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import attr
-from terra_proto.cosmos.gov.v1beta1 import MsgDeposit as MsgDeposit_pb
-from terra_proto.cosmos.gov.v1beta1 import MsgSubmitProposal as MsgSubmitProposal_pb
-from terra_proto.cosmos.gov.v1beta1 import MsgVote as MsgVote_pb
+from cosmos_proto.cosmos.gov.v1beta1 import MsgDeposit as MsgDeposit_pb
+from cosmos_proto.cosmos.gov.v1beta1 import MsgSubmitProposal as MsgSubmitProposal_pb
+from cosmos_proto.cosmos.gov.v1beta1 import MsgVote as MsgVote_pb
 
 from cosmos_sdk.core import AccAddress, Coins
 from cosmos_sdk.core.msg import Msg

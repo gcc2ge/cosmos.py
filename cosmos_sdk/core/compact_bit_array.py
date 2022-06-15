@@ -5,7 +5,7 @@ import base64
 import math
 
 import attr
-from terra_proto.cosmos.crypto.multisig.v1beta1 import (
+from cosmos_proto.cosmos.crypto.multisig.v1beta1 import (
     CompactBitArray as CompactBitArray_pb,
 )
 

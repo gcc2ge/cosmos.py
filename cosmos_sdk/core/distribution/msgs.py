@@ -3,16 +3,16 @@
 from __future__ import annotations
 
 import attr
-from terra_proto.cosmos.distribution.v1beta1 import (
+from cosmos_proto.cosmos.distribution.v1beta1 import (
     MsgFundCommunityPool as MsgFundCommunityPool_pb,
 )
-from terra_proto.cosmos.distribution.v1beta1 import (
+from cosmos_proto.cosmos.distribution.v1beta1 import (
     MsgSetWithdrawAddress as MsgSetWithdrawAddress_pb,
 )
-from terra_proto.cosmos.distribution.v1beta1 import (
+from cosmos_proto.cosmos.distribution.v1beta1 import (
     MsgWithdrawDelegatorReward as MsgWithdrawDelegatorReward_pb,
 )
-from terra_proto.cosmos.distribution.v1beta1 import (
+from cosmos_proto.cosmos.distribution.v1beta1 import (
     MsgWithdrawValidatorCommission as MsgWithdrawValidatorCommission_pb,
 )
 

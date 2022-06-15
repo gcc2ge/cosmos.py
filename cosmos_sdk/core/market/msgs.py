@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import attr
-from terra_proto.terra.market.v1beta1 import MsgSwap as MsgSwap_pb
-from terra_proto.terra.market.v1beta1 import MsgSwapSend as MsgSwapSend_pb
+from cosmos_proto.terra.market.v1beta1 import MsgSwap as MsgSwap_pb
+from cosmos_proto.terra.market.v1beta1 import MsgSwapSend as MsgSwapSend_pb
 
 from cosmos_sdk.core import AccAddress, Coin
 from cosmos_sdk.core.msg import Msg

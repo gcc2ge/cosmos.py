@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import attr
-from terra_proto.terra.oracle.v1beta1 import (
+from cosmos_proto.terra.oracle.v1beta1 import (
     AggregateExchangeRatePrevote as AggregateExchangeRatePrevote_pb, ExchangeRateTuple as ExchangeRateTuple_pb,
 )
-from terra_proto.terra.oracle.v1beta1 import (
+from cosmos_proto.terra.oracle.v1beta1 import (
     AggregateExchangeRateVote as AggregateExchangeRateVote_pb,
 )
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 import copy
 from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Union
 
-from terra_proto.cosmos.base.v1beta1 import Coin as Coin_pb
+from cosmos_proto.cosmos.base.v1beta1 import Coin as Coin_pb
 
 from cosmos_sdk.util.json import JSONSerializable
 

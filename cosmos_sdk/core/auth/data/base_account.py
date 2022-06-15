@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Optional
 
 import attr
-from terra_proto.cosmos.auth.v1beta1 import BaseAccount as BaseAccount_pb
+from cosmos_proto.cosmos.auth.v1beta1 import BaseAccount as BaseAccount_pb
 
 from ....core import AccAddress
 from ....util.json import JSONSerializable

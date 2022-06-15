@@ -6,16 +6,16 @@ from typing import List
 
 import attr
 from betterproto.lib.google.protobuf import Any as Any_pb
-from terra_proto.ibc.core.connection.v1 import (
+from cosmos_proto.ibc.core.connection.v1 import (
     MsgConnectionOpenAck as MsgConnectionOpenAck_pb,
 )
-from terra_proto.ibc.core.connection.v1 import (
+from cosmos_proto.ibc.core.connection.v1 import (
     MsgConnectionOpenConfirm as MsgConnectionOpenConfirm_pb,
 )
-from terra_proto.ibc.core.connection.v1 import (
+from cosmos_proto.ibc.core.connection.v1 import (
     MsgConnectionOpenInit as MsgConnectionOpenInit_pb,
 )
-from terra_proto.ibc.core.connection.v1 import (
+from cosmos_proto.ibc.core.connection.v1 import (
     MsgConnectionOpenTry as MsgConnectionOpenTry_pb,
 )
 

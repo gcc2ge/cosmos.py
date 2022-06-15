@@ -4,8 +4,8 @@ from __future__ import annotations
 from typing import List
 
 import attr
-from terra_proto.ibc.core.connection.v1 import Counterparty as Counterparty_pb
-from terra_proto.ibc.core.connection.v1 import Version as Version_pb
+from cosmos_proto.ibc.core.connection.v1 import Counterparty as Counterparty_pb
+from cosmos_proto.ibc.core.connection.v1 import Version as Version_pb
 
 from cosmos_sdk.util.json import JSONSerializable
 

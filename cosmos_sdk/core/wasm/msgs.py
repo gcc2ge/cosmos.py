@@ -7,17 +7,17 @@ import json
 from typing import Optional, Union
 
 import attr
-from terra_proto.terra.wasm.v1beta1 import (
+from cosmos_proto.terra.wasm.v1beta1 import (
     MsgClearContractAdmin as MsgClearContractAdmin_pb,
 )
-from terra_proto.terra.wasm.v1beta1 import MsgExecuteContract as MsgExecuteContract_pb
-from terra_proto.terra.wasm.v1beta1 import (
+from cosmos_proto.terra.wasm.v1beta1 import MsgExecuteContract as MsgExecuteContract_pb
+from cosmos_proto.terra.wasm.v1beta1 import (
     MsgInstantiateContract as MsgInstantiateContract_pb,
 )
-from terra_proto.terra.wasm.v1beta1 import MsgMigrateCode as MsgMigrateCode_pb
-from terra_proto.terra.wasm.v1beta1 import MsgMigrateContract as MsgMigrateContract_pb
-from terra_proto.terra.wasm.v1beta1 import MsgStoreCode as MsgStoreCode_pb
-from terra_proto.terra.wasm.v1beta1 import (
+from cosmos_proto.terra.wasm.v1beta1 import MsgMigrateCode as MsgMigrateCode_pb
+from cosmos_proto.terra.wasm.v1beta1 import MsgMigrateContract as MsgMigrateContract_pb
+from cosmos_proto.terra.wasm.v1beta1 import MsgStoreCode as MsgStoreCode_pb
+from cosmos_proto.terra.wasm.v1beta1 import (
     MsgUpdateContractAdmin as MsgUpdateContractAdmin_pb,
 )
 from betterproto.lib.google.protobuf import Any as Any_pb

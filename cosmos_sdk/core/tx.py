@@ -8,15 +8,15 @@ from typing import Dict, List, Optional
 
 import attr
 from betterproto.lib.google.protobuf import Any
-from terra_proto.cosmos.base.abci.v1beta1 import AbciMessageLog as AbciMessageLog_pb
-from terra_proto.cosmos.base.abci.v1beta1 import Attribute as Attribute_pb
-from terra_proto.cosmos.base.abci.v1beta1 import StringEvent as StringEvent_pb
-from terra_proto.cosmos.base.abci.v1beta1 import TxResponse as TxResponse_pb
-from terra_proto.cosmos.tx.signing.v1beta1 import SignMode as SignMode_pb
-from terra_proto.cosmos.tx.v1beta1 import AuthInfo as AuthInfo_pb
-from terra_proto.cosmos.tx.v1beta1 import SignerInfo as SignerInfo_pb
-from terra_proto.cosmos.tx.v1beta1 import Tx as Tx_pb
-from terra_proto.cosmos.tx.v1beta1 import TxBody as TxBody_pb
+from cosmos_proto.cosmos.base.abci.v1beta1 import AbciMessageLog as AbciMessageLog_pb
+from cosmos_proto.cosmos.base.abci.v1beta1 import Attribute as Attribute_pb
+from cosmos_proto.cosmos.base.abci.v1beta1 import StringEvent as StringEvent_pb
+from cosmos_proto.cosmos.base.abci.v1beta1 import TxResponse as TxResponse_pb
+from cosmos_proto.cosmos.tx.signing.v1beta1 import SignMode as SignMode_pb
+from cosmos_proto.cosmos.tx.v1beta1 import AuthInfo as AuthInfo_pb
+from cosmos_proto.cosmos.tx.v1beta1 import SignerInfo as SignerInfo_pb
+from cosmos_proto.cosmos.tx.v1beta1 import Tx as Tx_pb
+from cosmos_proto.cosmos.tx.v1beta1 import TxBody as TxBody_pb
 
 from cosmos_sdk.core.compact_bit_array import CompactBitArray
 from cosmos_sdk.core.fee import Fee

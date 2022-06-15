@@ -5,9 +5,9 @@ from __future__ import annotations
 from typing import List
 
 import attr
-from terra_proto.cosmos.authz.v1beta1 import MsgExec as MsgExec_pb
-from terra_proto.cosmos.authz.v1beta1 import MsgGrant as MsgGrant_pb
-from terra_proto.cosmos.authz.v1beta1 import MsgRevoke as MsgRevoke_pb
+from cosmos_proto.cosmos.authz.v1beta1 import MsgExec as MsgExec_pb
+from cosmos_proto.cosmos.authz.v1beta1 import MsgGrant as MsgGrant_pb
+from cosmos_proto.cosmos.authz.v1beta1 import MsgRevoke as MsgRevoke_pb
 
 from betterproto.lib.google.protobuf import Any as Any_pb
 

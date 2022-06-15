@@ -8,10 +8,10 @@ from typing import Optional
 
 import attr
 from betterproto.lib.google.protobuf import Any as Any_pb
-from terra_proto.cosmos.upgrade.v1beta1 import (
+from cosmos_proto.cosmos.upgrade.v1beta1 import (
     CancelSoftwareUpgradeProposal as CancelSoftwareUpgradeProposal_pb,
 )
-from terra_proto.cosmos.upgrade.v1beta1 import (
+from cosmos_proto.cosmos.upgrade.v1beta1 import (
     SoftwareUpgradeProposal as SoftwareUpgradeProposal_pb,
 )
 

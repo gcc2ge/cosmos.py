@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import attr
 from betterproto.lib.google.protobuf import Any as Any_pb
-from terra_proto.ibc.core.client.v1 import ClientUpdateProposal as ClientUpdateProposal_pb
+from cosmos_proto.ibc.core.client.v1 import ClientUpdateProposal as ClientUpdateProposal_pb
 
 __all__ = ["ClientUpdateProposal"]
 

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import attr
-from terra_proto.cosmos.vesting.v1beta1 import (
+from cosmos_proto.cosmos.vesting.v1beta1 import (
     BaseVestingAccount as BaseVestingAccount_pb,
 )
 

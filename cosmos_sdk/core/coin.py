@@ -5,7 +5,7 @@ import re
 from typing import Union
 
 import attr
-from terra_proto.cosmos.base.v1beta1 import Coin as Coin_pb
+from cosmos_proto.cosmos.base.v1beta1 import Coin as Coin_pb
 
 from cosmos_sdk.util.json import JSONSerializable
 

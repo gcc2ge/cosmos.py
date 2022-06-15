@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from terra_proto.cosmos.crisis.v1beta1 import (
+from cosmos_proto.cosmos.crisis.v1beta1 import (
     MsgVerifyInvariant as MsgVerifyInvariant_pb,
 )
 from betterproto.lib.google.protobuf import Any as Any_pb

@@ -6,11 +6,11 @@ from typing import List
 import attr
 from dateutil import parser
 
-from terra_proto.cosmos.gov.v1beta1 import Proposal as Proposal_pb, ProposalStatus
-from terra_proto.cosmos.gov.v1beta1 import TallyResult as TallyResult_pb
-from terra_proto.cosmos.gov.v1beta1 import Vote as Vote_pb
-from terra_proto.cosmos.gov.v1beta1 import VoteOption
-from terra_proto.cosmos.gov.v1beta1 import WeightedVoteOption as WeightedVoteOption_pb
+from cosmos_proto.cosmos.gov.v1beta1 import Proposal as Proposal_pb, ProposalStatus
+from cosmos_proto.cosmos.gov.v1beta1 import TallyResult as TallyResult_pb
+from cosmos_proto.cosmos.gov.v1beta1 import Vote as Vote_pb
+from cosmos_proto.cosmos.gov.v1beta1 import VoteOption
+from cosmos_proto.cosmos.gov.v1beta1 import WeightedVoteOption as WeightedVoteOption_pb
 
 from cosmos_sdk.core import AccAddress, Coins
 from cosmos_sdk.util.json import JSONSerializable

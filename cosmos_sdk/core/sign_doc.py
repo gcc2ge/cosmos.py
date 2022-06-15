@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 
 import attr
-from terra_proto.cosmos.tx.v1beta1 import SignDoc as SignDoc_pb
+from cosmos_proto.cosmos.tx.v1beta1 import SignDoc as SignDoc_pb
 
 from cosmos_sdk.core.tx import AuthInfo, TxBody
 from cosmos_sdk.util.json import JSONSerializable

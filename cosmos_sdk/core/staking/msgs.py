@@ -5,15 +5,15 @@ from __future__ import annotations
 from typing import Optional
 
 import attr
-from terra_proto.cosmos.staking.v1beta1 import (
+from cosmos_proto.cosmos.staking.v1beta1 import (
     MsgBeginRedelegate as MsgBeginRedelegate_pb,
 )
-from terra_proto.cosmos.staking.v1beta1 import (
+from cosmos_proto.cosmos.staking.v1beta1 import (
     MsgCreateValidator as MsgCreateValidator_pb,
 )
-from terra_proto.cosmos.staking.v1beta1 import MsgDelegate as MsgDelegate_pb
-from terra_proto.cosmos.staking.v1beta1 import MsgEditValidator as MsgEditValidator_pb
-from terra_proto.cosmos.staking.v1beta1 import MsgUndelegate as MsgUndelegate_pb
+from cosmos_proto.cosmos.staking.v1beta1 import MsgDelegate as MsgDelegate_pb
+from cosmos_proto.cosmos.staking.v1beta1 import MsgEditValidator as MsgEditValidator_pb
+from cosmos_proto.cosmos.staking.v1beta1 import MsgUndelegate as MsgUndelegate_pb
 
 from cosmos_sdk.core import AccAddress, Coin, Dec, ValAddress, ValConsPubKey
 from cosmos_sdk.core.msg import Msg

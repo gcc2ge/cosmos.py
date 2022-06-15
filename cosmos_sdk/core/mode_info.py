@@ -5,9 +5,9 @@ from __future__ import annotations
 from typing import List, Optional
 
 import attr
-from terra_proto.cosmos.tx.v1beta1 import ModeInfo as ModeInfo_pb
-from terra_proto.cosmos.tx.v1beta1 import ModeInfoMulti as ModeInfoMulti_pb
-from terra_proto.cosmos.tx.v1beta1 import ModeInfoSingle as ModeInfoSingle_pb
+from cosmos_proto.cosmos.tx.v1beta1 import ModeInfo as ModeInfo_pb
+from cosmos_proto.cosmos.tx.v1beta1 import ModeInfoMulti as ModeInfoMulti_pb
+from cosmos_proto.cosmos.tx.v1beta1 import ModeInfoSingle as ModeInfoSingle_pb
 
 from cosmos_sdk.util.json import JSONSerializable
 
@@ -19,7 +19,7 @@ __all__ = [
     "ModeInfoMulti",
 ]
 
-from terra_proto.cosmos.tx.signing.v1beta1 import SignMode
+from cosmos_proto.cosmos.tx.signing.v1beta1 import SignMode
 
 
 @attr.s

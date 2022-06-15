@@ -5,11 +5,11 @@ from __future__ import annotations
 from typing import List
 
 import attr
-from terra_proto.terra.vesting.v1beta1 import (
+from cosmos_proto.terra.vesting.v1beta1 import (
     LazyGradedVestingAccount as LazyGradedVestingAccount_pb,
 )
-from terra_proto.terra.vesting.v1beta1 import Schedule as Schedule_pb
-from terra_proto.terra.vesting.v1beta1 import VestingSchedule as VestingSchedule_pb
+from cosmos_proto.terra.vesting.v1beta1 import Schedule as Schedule_pb
+from cosmos_proto.terra.vesting.v1beta1 import VestingSchedule as VestingSchedule_pb
 
 from cosmos_sdk.core import Dec
 from cosmos_sdk.util.json import JSONSerializable

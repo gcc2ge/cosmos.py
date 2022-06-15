@@ -10,7 +10,7 @@ from typing import Any, Optional
 import attr
 from betterproto.lib.google.protobuf import Any as Any_pb
 from dateutil.parser import parse
-from terra_proto.cosmos.upgrade.v1beta1 import Plan as Plan_pb
+from cosmos_proto.cosmos.upgrade.v1beta1 import Plan as Plan_pb
 
 from cosmos_sdk.util.converter import to_isoformat
 from cosmos_sdk.util.json import JSONSerializable

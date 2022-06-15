@@ -5,13 +5,13 @@ from __future__ import annotations
 import hashlib
 
 import attr
-from terra_proto.terra.oracle.v1beta1 import (
+from cosmos_proto.terra.oracle.v1beta1 import (
     MsgAggregateExchangeRatePrevote as MsgAggregateExchangeRatePrevote_pb,
 )
-from terra_proto.terra.oracle.v1beta1 import (
+from cosmos_proto.terra.oracle.v1beta1 import (
     MsgAggregateExchangeRateVote as MsgAggregateExchangeRateVote_pb,
 )
-from terra_proto.terra.oracle.v1beta1 import (
+from cosmos_proto.terra.oracle.v1beta1 import (
     MsgDelegateFeedConsent as MsgDelegateFeedConsent_pb,
 )
 

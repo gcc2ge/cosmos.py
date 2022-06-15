@@ -4,11 +4,11 @@ from __future__ import annotations
 from typing import List
 
 import attr
-from terra_proto.ibc.core.channel.v1 import Channel as Channel_pb
-from terra_proto.ibc.core.channel.v1 import Counterparty as Counterparty_pb
-from terra_proto.ibc.core.channel.v1 import Order
-from terra_proto.ibc.core.channel.v1 import Packet as Packet_pb
-from terra_proto.ibc.core.channel.v1 import State
+from cosmos_proto.ibc.core.channel.v1 import Channel as Channel_pb
+from cosmos_proto.ibc.core.channel.v1 import Counterparty as Counterparty_pb
+from cosmos_proto.ibc.core.channel.v1 import Order
+from cosmos_proto.ibc.core.channel.v1 import Packet as Packet_pb
+from cosmos_proto.ibc.core.channel.v1 import State
 
 from cosmos_sdk.core.ibc.data.client import Height
 from cosmos_sdk.util.json import JSONSerializable

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import attr
 from betterproto.lib.google.protobuf import Any as Any_pb
-from terra_proto.cosmos.gov.v1beta1 import TextProposal as TextProposal_pb
+from cosmos_proto.cosmos.gov.v1beta1 import TextProposal as TextProposal_pb
 
 from cosmos_sdk.util.json import JSONSerializable
 

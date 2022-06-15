@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import attr
-from terra_proto.cosmos.gov.v1beta1 import Deposit as Deposit_pb
+from cosmos_proto.cosmos.gov.v1beta1 import Deposit as Deposit_pb
 
 from cosmos_sdk.core import AccAddress
 from cosmos_sdk.util.json import JSONSerializable

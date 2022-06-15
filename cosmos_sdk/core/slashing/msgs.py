@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import attr
-from terra_proto.cosmos.slashing.v1beta1 import MsgUnjail as MsgUnjail_pb
+from cosmos_proto.cosmos.slashing.v1beta1 import MsgUnjail as MsgUnjail_pb
 
 from cosmos_sdk.core import ValAddress
 from cosmos_sdk.core.msg import Msg

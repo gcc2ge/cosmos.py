@@ -8,11 +8,11 @@ from typing import List, Optional
 import attr
 from attr import converters
 from dateutil import parser
-from terra_proto.cosmos.feegrant.v1beta1 import (
+from cosmos_proto.cosmos.feegrant.v1beta1 import (
     AllowedMsgAllowance as AllowedMsgAllowance_pb,
 )
-from terra_proto.cosmos.feegrant.v1beta1 import BasicAllowance as BasicAllowance_pb
-from terra_proto.cosmos.feegrant.v1beta1 import (
+from cosmos_proto.cosmos.feegrant.v1beta1 import BasicAllowance as BasicAllowance_pb
+from cosmos_proto.cosmos.feegrant.v1beta1 import (
     PeriodicAllowance as PeriodicAllowance_pb,
 )
 
