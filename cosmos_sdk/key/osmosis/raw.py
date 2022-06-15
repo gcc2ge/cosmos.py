@@ -9,7 +9,7 @@ from .key import Key
 
 __all__ = ["RawKey"]
 
-from ..core import PublicKey, SimplePublicKey
+from ...core import PublicKey, SimplePublicKey
 
 
 def compute_public_key(private_key: bytes) -> PublicKey:

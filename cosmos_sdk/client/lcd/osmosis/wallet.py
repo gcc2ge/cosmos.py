@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from cosmos_sdk.key.key import Key, SignOptions
+from cosmos_sdk.key.osmosis.key import Key, SignOptions
 
-from .api.tx import CreateTxOptions, SignerOptions
+from ..api.tx import CreateTxOptions, SignerOptions
 
 __all__ = ["Wallet", "AsyncWallet"]
 
-from ...core.tx import SignMode, Tx
+from ....core.tx import SignMode, Tx
 
 
 class AsyncWallet:

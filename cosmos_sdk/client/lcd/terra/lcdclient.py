@@ -10,7 +10,7 @@ from multidict import CIMultiDict
 
 from cosmos_sdk.core import Coins, Dec, Numeric
 from cosmos_sdk.exceptions import LCDResponseError
-from cosmos_sdk.key.key import Key
+from cosmos_sdk.key.terra.key import Key
 from cosmos_sdk.util.json import dict_to_data
 from cosmos_sdk.util.url import urljoin
 
@@ -33,7 +33,7 @@ from ..api.tx import AsyncTxAPI, TxAPI
 from ..api.terra.wasm import AsyncWasmAPI, WasmAPI
 from ..lcdutils import AsyncLCDUtils, LCDUtils
 from ..params import APIParams
-from ..wallet import AsyncWallet, Wallet
+from .wallet import AsyncWallet, Wallet
 
 
 def get_default(chain_id: str) -> [Coins, Numeric]:

@@ -10,7 +10,7 @@ from aiohttp import ClientSession
 
 from cosmos_sdk.core import Coins, Dec, Numeric
 from cosmos_sdk.exceptions import LCDResponseError
-from cosmos_sdk.key.key import Key
+from cosmos_sdk.key.osmosis.key import Key
 from cosmos_sdk.util.json import dict_to_data
 from cosmos_sdk.util.url import urljoin
 
@@ -29,7 +29,7 @@ from ..api.tx import AsyncTxAPI, TxAPI
 from ..api.osmosis.gamm import AsyncGAMMAPI, GAMMAPI
 from ..lcdutils import AsyncLCDUtils, LCDUtils
 from ..params import APIParams, PaginationOptions
-from ..wallet import AsyncWallet, Wallet
+from ..osmosis.wallet import AsyncWallet, Wallet
 
 
 class AsyncLCDClient:
