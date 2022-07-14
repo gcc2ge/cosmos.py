@@ -35,6 +35,8 @@ class AsyncGAMMAPI(BaseAsyncAPI):
         pool_id: int,
     ) -> List[PoolAsset]:
         res = await self._c._get(f"/osmosis/gamm/v1beta1/pools/{pool_id}/tokens")
+        print(res)
+        # https://github.com/osmosis-labs/osmosis/blob/ee48cf581d020f28ed250a9c4c5d13338cdd94c1/docs/core/proto-docs.md#osmosis.gamm.v1beta1.QueryTotalPoolLiquidityResponse
         return [ PoolAsset.from_data(asset) for asset in res["poolAssets"]]
 
     
