@@ -30,14 +30,25 @@ class AsyncGAMMAPI(BaseAsyncAPI):
         res = await self._c._get(f"/osmosis/gamm/v1beta1/pools/{pool_id}")
         return Pool.from_data(res["pool"])
 
-    async def pool_asset(
+    async def pool_liquidity(
         self,
         pool_id: int,
-    ) -> List[PoolAsset]:
-        res = await self._c._get(f"/osmosis/gamm/v1beta1/pools/{pool_id}/tokens")
+    ) -> List[Coin]:
+        res = await self._c._get(f"/osmosis/gamm/v1beta1/pools/{pool_id}/total_pool_liquidity")
         print(res)
+        
         # https://github.com/osmosis-labs/osmosis/blob/ee48cf581d020f28ed250a9c4c5d13338cdd94c1/docs/core/proto-docs.md#osmosis.gamm.v1beta1.QueryTotalPoolLiquidityResponse
-        return [ PoolAsset.from_data(asset) for asset in res["poolAssets"]]
+        return [ Coin.from_data(asset) for asset in res['liquidity']]
+
+    async def pool_liquidity(
+        self,
+        pool_id: int,
+    ) -> List[Coin]:
+        res = await self._c._get(f"/osmosis/gamm/v1beta1/pools/{pool_id}/total_pool_liquidity")
+        print(res)
+        
+        # https://github.com/osmosis-labs/osmosis/blob/ee48cf581d020f28ed250a9c4c5d13338cdd94c1/docs/core/proto-docs.md#osmosis.gamm.v1beta1.QueryTotalPoolLiquidityResponse
+        return [ Coin.from_data(asset) for asset in res['liquidity']]
 
     
 
