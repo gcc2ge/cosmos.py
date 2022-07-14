@@ -2,7 +2,7 @@ from cosmos_sdk.core import Coin, Dec
 
 from .._base import BaseAsyncAPI, sync_bind
 
-from cosmos_sdk.core.gamm import Pool, PoolAsset
+from cosmos_sdk.core.gamm import Pool
 from ...params import APIParams
 
 from typing import List, Tuple, Dict, Optional
@@ -35,17 +35,6 @@ class AsyncGAMMAPI(BaseAsyncAPI):
         pool_id: int,
     ) -> List[Coin]:
         res = await self._c._get(f"/osmosis/gamm/v1beta1/pools/{pool_id}/total_pool_liquidity")
-        print(res)
-        
-        # https://github.com/osmosis-labs/osmosis/blob/ee48cf581d020f28ed250a9c4c5d13338cdd94c1/docs/core/proto-docs.md#osmosis.gamm.v1beta1.QueryTotalPoolLiquidityResponse
-        return [ Coin.from_data(asset) for asset in res['liquidity']]
-
-    async def pool_liquidity(
-        self,
-        pool_id: int,
-    ) -> List[Coin]:
-        res = await self._c._get(f"/osmosis/gamm/v1beta1/pools/{pool_id}/total_pool_liquidity")
-        print(res)
         
         # https://github.com/osmosis-labs/osmosis/blob/ee48cf581d020f28ed250a9c4c5d13338cdd94c1/docs/core/proto-docs.md#osmosis.gamm.v1beta1.QueryTotalPoolLiquidityResponse
         return [ Coin.from_data(asset) for asset in res['liquidity']]
@@ -62,8 +51,8 @@ class GAMMAPI(AsyncGAMMAPI):
     def pools(self, params: Optional[APIParams] = None ) -> Dec:
         pass
 
-    @sync_bind(AsyncGAMMAPI.pool_asset)
-    def pool_asset(self, pool_id: int) -> PoolAsset:
+    @sync_bind(AsyncGAMMAPI.pool_liquidity)
+    def pool_liquidity(self, pool_id: int) -> List[Coin]:
         pass
 
     @sync_bind(AsyncGAMMAPI.pool)
